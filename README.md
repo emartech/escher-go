@@ -6,7 +6,7 @@ Go implementation of the [AWS4](http://docs.aws.amazon.com/general/latest/gr/sig
 Prerequisite
 ------------
 
-In order to run the tests, some Go libraries should be installed. See ```.travis.yml``` for tips.
+In order to run the tests, some Go libraries should be installed. See `.travis.yml` for tips.
 
 Run the tests
 -------------
