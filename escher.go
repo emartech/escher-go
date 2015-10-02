@@ -47,7 +47,7 @@ func Escher(config EscherConfig) EscherConfig {
     t, err = time.Parse("Fri, 02 Jan 2006 15:04:05 GMT", config.Date)
   }
   if err != nil {
-    t = time.Now()
+    t = time.Now().UTC()
   }
   config.Date = t.Format("20060102T150405Z")
   return config
