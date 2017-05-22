@@ -1,0 +1,48 @@
+memo = "e994de3d13e633e25eef67f31ca2c374d0b3c3536eabc6279b25e429a0d43866"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/PuerkitoBio/purell"
+  packages = ["."]
+  revision = "b938d81255b5473c57635324295cb0fe398c7a58"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/PuerkitoBio/urlesc"
+  packages = ["."]
+  revision = "bbf7a2afc14f93e1e0a5c06df524fbd75e5031e5"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/gopherjs/gopherjs"
+  packages = ["js"]
+  revision = "6997325cc76f13635f68ad9e1c38544966eb7de2"
+
+[[projects]]
+  name = "github.com/jtolds/gls"
+  packages = ["."]
+  revision = "8ddce2a84170772b95dd5d576c48d517b22cac63"
+  version = "v4.2.0"
+
+[[projects]]
+  name = "github.com/smartystreets/assertions"
+  packages = [".","internal/go-render/render","internal/oglematchers"]
+  revision = "f8459f92181409546d2762c9e9c4bedc23c92d76"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/smartystreets/goconvey"
+  packages = ["convey","convey/gotest","convey/reporting"]
+  revision = "af8e7d560364b90f732a1d119d17b5506e50447d"
+
+[[projects]]
+  branch = "master"
+  name = "golang.org/x/net"
+  packages = ["idna"]
+  revision = "513929065c19401a1c7b76ecd942f9f86a0c061b"
+
+[[projects]]
+  branch = "master"
+  name = "golang.org/x/text"
+  packages = ["internal/gen","internal/triegen","internal/ucd","secure/bidirule","transform","unicode/bidi","unicode/cldr","unicode/norm","unicode/rangetable","width"]
+  revision = "19e51611da83d6be54ddafce4a4af510cb3e9ea4"
