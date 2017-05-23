@@ -3,6 +3,7 @@ package escher
 import (
 	"encoding/json"
 	"io/ioutil"
+	"log"
 	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"
@@ -56,7 +57,7 @@ var tests = map[string]map[string][]string{
 			"signrequest-only-sign-specified-headers",
 		},
 		"presignUrl": []string{
-		// "presignurl-valid-with-path-query",
+			"presignurl-valid-with-path-query",
 		},
 		"authenticate": []string{
 		// "authenticate-valid-authentication-datein-expiretime",
@@ -81,13 +82,13 @@ var tests = map[string]map[string][]string{
 	},
 }
 
-func getTestConfigsForTopic(topic string) []TestConfig {
+func getTestConfigsForTopic(t testing.TB, topic string) []TestConfig {
 	var configs = []TestConfig{}
 	for testSuite, testTypes := range tests {
 		for testTopic, testFiles := range testTypes {
 			if testTopic == topic {
 				for _, testFile := range testFiles {
-					configs = append(configs, loadTestFile(testSuite, testFile))
+					configs = append(configs, loadTestFile(t, testSuite, testFile))
 				}
 			}
 		}
@@ -122,10 +123,19 @@ func (testConfig TestConfig) getTitle() string {
 	return title
 }
 
-func loadTestFile(testSuite string, testID string) TestConfig {
+func loadTestFile(t testing.TB, testSuite string, testID string) TestConfig {
+	if testing.Verbose() {
+		log.Printf("%s - %s\n", testSuite, testID)
+	}
+
 	var testConfig TestConfig
 	var filename = testSuite + "_testsuite/" + testID + ".json"
-	content, _ := ioutil.ReadFile(filename)
+	content, err := ioutil.ReadFile(filename)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	json.Unmarshal(content, &testConfig)
 	testConfig.ID = testSuite + ":" + testID
 	return testConfig
@@ -134,7 +144,7 @@ func loadTestFile(testSuite string, testID string) TestConfig {
 func TestCanonicalizeRequest(t *testing.T) {
 
 	Convey("CanonicalizeRequest should return with a proper string", t, func() {
-		for _, testConfig := range getTestConfigsForTopic("signRequest") {
+		for _, testConfig := range getTestConfigsForTopic(t, "signRequest") {
 			var escher = Escher(testConfig.Config)
 			var testTitle = testConfig.getTitle()
 			if testConfig.Expected.CanonicalizedRequest != "" {
@@ -147,7 +157,7 @@ func TestCanonicalizeRequest(t *testing.T) {
 	})
 
 	Convey("GetStringToSign should return with a proper string", t, func() {
-		for _, testConfig := range getTestConfigsForTopic("signRequest") {
+		for _, testConfig := range getTestConfigsForTopic(t, "signRequest") {
 			var escher = Escher(testConfig.Config)
 			var testTitle = testConfig.getTitle()
 			if testConfig.Expected.StringToSign != "" {
@@ -160,7 +170,7 @@ func TestCanonicalizeRequest(t *testing.T) {
 	})
 
 	Convey("GenerateHeader should return with a proper string", t, func() {
-		for _, testConfig := range getTestConfigsForTopic("signRequest") {
+		for _, testConfig := range getTestConfigsForTopic(t, "signRequest") {
 			var escher = Escher(testConfig.Config)
 			var testTitle = testConfig.getTitle()
 			if testConfig.Expected.AuthHeader != "" {
@@ -173,7 +183,7 @@ func TestCanonicalizeRequest(t *testing.T) {
 	})
 
 	Convey("SignRequest should return with a properly signed request", t, func() {
-		for _, testConfig := range getTestConfigsForTopic("signRequest") {
+		for _, testConfig := range getTestConfigsForTopic(t, "signRequest") {
 			var escher = Escher(testConfig.Config)
 			var testTitle = testConfig.getTitle()
 			if testConfig.Expected.Request.Method != "" {
