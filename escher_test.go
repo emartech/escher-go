@@ -6,7 +6,7 @@ import (
 	"log"
 	"testing"
 
-	. "github.com/smartystreets/goconvey/convey"
+	"github.com/stretchr/testify/assert"
 )
 
 var tests = map[string]map[string][]string{
@@ -141,58 +141,85 @@ func loadTestFile(t testing.TB, testSuite string, testID string) TestConfig {
 	return testConfig
 }
 
-func TestCanonicalizeRequest(t *testing.T) {
-
-	Convey("CanonicalizeRequest should return with a proper string", t, func() {
-		for _, testConfig := range getTestConfigsForTopic(t, "signRequest") {
-			var escher = Escher(testConfig.Config)
-			var testTitle = testConfig.getTitle()
-			if testConfig.Expected.CanonicalizedRequest != "" {
-				Convey(testTitle, func() {
-					var canonicalizedRequest = escher.CanonicalizeRequest(testConfig.Request, testConfig.HeadersToSign)
-					So(canonicalizedRequest, ShouldEqual, testConfig.Expected.CanonicalizedRequest)
-				})
-			}
-		}
-	})
-
-	Convey("GetStringToSign should return with a proper string", t, func() {
-		for _, testConfig := range getTestConfigsForTopic(t, "signRequest") {
-			var escher = Escher(testConfig.Config)
-			var testTitle = testConfig.getTitle()
-			if testConfig.Expected.StringToSign != "" {
-				Convey(testTitle, func() {
-					var stringToSign = escher.GetStringToSign(testConfig.Request, testConfig.HeadersToSign)
-					So(stringToSign, ShouldEqual, testConfig.Expected.StringToSign)
-				})
-			}
-		}
-	})
-
-	Convey("GenerateHeader should return with a proper string", t, func() {
-		for _, testConfig := range getTestConfigsForTopic(t, "signRequest") {
-			var escher = Escher(testConfig.Config)
-			var testTitle = testConfig.getTitle()
-			if testConfig.Expected.AuthHeader != "" {
-				Convey(testTitle, func() {
-					var authHeader = escher.GenerateHeader(testConfig.Request, testConfig.HeadersToSign)
-					So(authHeader, ShouldEqual, testConfig.Expected.AuthHeader)
-				})
-			}
-		}
-	})
-
-	Convey("SignRequest should return with a properly signed request", t, func() {
-		for _, testConfig := range getTestConfigsForTopic(t, "signRequest") {
-			var escher = Escher(testConfig.Config)
-			var testTitle = testConfig.getTitle()
-			if testConfig.Expected.Request.Method != "" {
-				Convey(testTitle, func() {
-					var request = escher.SignRequest(testConfig.Request, testConfig.HeadersToSign)
-					So(request, ShouldResemble, testConfig.Expected.Request)
-				})
-			}
-		}
-	})
-
+func eachTestConfigFor(t testing.TB, topic string, tester func(EscherConfig, TestConfig)) {
+	for _, testConfig := range getTestConfigsForTopic(t, topic) {
+		var escher = Escher(testConfig.Config)
+		t.Log(testConfig.getTitle())
+		t.Log(testConfig.Description)
+		tester(escher, testConfig)
+	}
 }
+
+func TestCanonicalizeRequest(t *testing.T) {
+	t.Log("CanonicalizeRequest should return with a proper string")
+	eachTestConfigFor(t, "signRequest", func(escher EscherConfig, testConfig TestConfig) {
+		if testConfig.Expected.CanonicalizedRequest == "" {
+			return
+		}
+
+		canonicalizedRequest := escher.CanonicalizeRequest(testConfig.Request, testConfig.HeadersToSign)
+
+		if canonicalizedRequest != testConfig.Expected.CanonicalizedRequest {
+			t.Fatal("canonicalizedRequest should be eq")
+		}
+
+	})
+}
+
+func TestGetStringToSign(t *testing.T) {
+	t.Log("GetStringToSign should return with a proper string")
+	eachTestConfigFor(t, "signRequest", func(escher EscherConfig, testConfig TestConfig) {
+		if testConfig.Expected.StringToSign == "" {
+			return
+		}
+
+		stringToSign := escher.GetStringToSign(testConfig.Request, testConfig.HeadersToSign)
+		if stringToSign != testConfig.Expected.StringToSign {
+			t.Fatal("stringToSign expected to eq with the test config expectation")
+		}
+	})
+}
+
+func TestGenerateHeader(t *testing.T) {
+	t.Log("GenerateHeader should return with a proper string")
+	eachTestConfigFor(t, "signRequest", func(escher EscherConfig, testConfig TestConfig) {
+		if testConfig.Expected.AuthHeader == "" {
+			return
+		}
+
+		authHeader := escher.GenerateHeader(testConfig.Request, testConfig.HeadersToSign)
+		if authHeader != testConfig.Expected.AuthHeader {
+			t.Fatal("authHeader generation failed")
+		}
+	})
+}
+
+func TestSignRequest(t *testing.T) {
+	t.Skip("no use case that would test this feature")
+
+	t.Log("SignRequest should return with a properly signed request")
+	eachTestConfigFor(t, "signRequest", func(escher EscherConfig, testConfig TestConfig) {
+		if testConfig.Expected.Request.Method != "" {
+			t.Log("no use case")
+			return
+		}
+
+		request := escher.SignRequest(testConfig.Request, testConfig.HeadersToSign)
+		if !assert.Equal(t, testConfig.Expected.Request, request, "Requests should be eq") {
+			t.Fail()
+		}
+	})
+}
+
+// func TestAuthenticate(t *testing.T) {
+// 	for _, testConfig := range getTestConfigsForTopic(t, "authenticate") {
+// 		var escher = Escher(testConfig.Config)
+// 		var testTitle = testConfig.getTitle()
+
+// 		if testConfig.Expected.CanonicalizedRequest != "" {
+
+// 			var canonicalizedRequest = escher.CanonicalizeRequest(testConfig.Request, testConfig.HeadersToSign)
+// 			So(canonicalizedRequest, ShouldEqual, testConfig.Expected.CanonicalizedRequest)
+// 		}
+// 	}
+// }
