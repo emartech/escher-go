@@ -97,20 +97,20 @@ func getTestConfigsForTopic(t testing.TB, topic string) []TestConfig {
 }
 
 type TestConfigExpected struct {
-	Request              EscherRequest
-	CanonicalizedRequest string
-	StringToSign         string
-	AuthHeader           string
+	Request              EscherRequest `json:"request"`
+	CanonicalizedRequest string        `json:"canonicalizedRequest"`
+	StringToSign         string        `json:"stringToSign"`
+	AuthHeader           string        `json:"authHeader"`
 }
 
 type TestConfig struct {
 	ID            string
-	HeadersToSign []string
-	Title         string
-	Description   string
-	Request       EscherRequest
-	Config        EscherConfig
-	Expected      TestConfigExpected
+	HeadersToSign []string           `json:"headersToSign"`
+	Title         string             `json:"title"`
+	Description   string             `json:"description"`
+	Request       EscherRequest      `json:"request"`
+	Config        EscherConfig       `json:"config"`
+	Expected      TestConfigExpected `json:"expected"`
 }
 
 func (testConfig TestConfig) getTitle() string {
@@ -151,11 +151,14 @@ func eachTestConfigFor(t testing.TB, topic string, tester func(EscherConfig, Tes
 }
 
 func TestCanonicalizeRequest(t *testing.T) {
+	var tested bool
 	t.Log("CanonicalizeRequest should return with a proper string")
 	eachTestConfigFor(t, "signRequest", func(escher EscherConfig, testConfig TestConfig) {
 		if testConfig.Expected.CanonicalizedRequest == "" {
 			return
 		}
+
+		tested = true
 
 		canonicalizedRequest := escher.CanonicalizeRequest(testConfig.Request, testConfig.HeadersToSign)
 
@@ -164,51 +167,70 @@ func TestCanonicalizeRequest(t *testing.T) {
 		}
 
 	})
+	if !tested {
+		t.Fatal("TestCanonicalizeRequest not tested")
+	}
 }
 
 func TestGetStringToSign(t *testing.T) {
+	var tested bool
 	t.Log("GetStringToSign should return with a proper string")
 	eachTestConfigFor(t, "signRequest", func(escher EscherConfig, testConfig TestConfig) {
 		if testConfig.Expected.StringToSign == "" {
 			return
 		}
 
+		tested = true
+
 		stringToSign := escher.GetStringToSign(testConfig.Request, testConfig.HeadersToSign)
 		if stringToSign != testConfig.Expected.StringToSign {
 			t.Fatal("stringToSign expected to eq with the test config expectation")
 		}
 	})
+	if !tested {
+		t.Fatal("TestGetStringToSign not tested")
+	}
 }
 
 func TestGenerateHeader(t *testing.T) {
+	var tested bool
+
 	t.Log("GenerateHeader should return with a proper string")
 	eachTestConfigFor(t, "signRequest", func(escher EscherConfig, testConfig TestConfig) {
 		if testConfig.Expected.AuthHeader == "" {
 			return
 		}
 
+		tested = true
 		authHeader := escher.GenerateHeader(testConfig.Request, testConfig.HeadersToSign)
 		if authHeader != testConfig.Expected.AuthHeader {
 			t.Fatal("authHeader generation failed")
 		}
 	})
+
+	if !tested {
+		t.Fatal("TestGenerateHeader not tested")
+	}
 }
 
 func TestSignRequest(t *testing.T) {
-	t.Skip("no use case that would test this feature")
-
+	// t.Skip("no use case that would test this feature")
+	var tested bool
 	t.Log("SignRequest should return with a properly signed request")
+
 	eachTestConfigFor(t, "signRequest", func(escher EscherConfig, testConfig TestConfig) {
-		if testConfig.Expected.Request.Method != "" {
-			t.Log("no use case")
+		if testConfig.Expected.Request.Method == "" {
 			return
 		}
 
+		tested = true
 		request := escher.SignRequest(testConfig.Request, testConfig.HeadersToSign)
-		if !assert.Equal(t, testConfig.Expected.Request, request, "Requests should be eq") {
-			t.Fail()
-		}
+		assert.Equal(t, testConfig.Expected.Request, request, "Requests should be eq")
 	})
+
+	if !tested {
+		t.Fatal("TestSignRequest not tested")
+	}
 }
 
 // func TestAuthenticate(t *testing.T) {

@@ -5,13 +5,14 @@ import (
 	"crypto/sha256"
 	"crypto/sha512"
 	"encoding/hex"
-	. "github.com/PuerkitoBio/purell"
 	"hash"
 	"net/url"
 	"regexp"
 	"sort"
 	"strings"
 	"time"
+
+	. "github.com/PuerkitoBio/purell"
 )
 
 type parsedPathQuery struct {
@@ -32,10 +33,10 @@ type EscherConfig struct {
 }
 
 type EscherRequest struct {
-	Method  string
-	Url     string
-	Headers EscherRequestHeaders
-	Body    string
+	Method  string               `json:"method"`
+	Url     string               `json:"url"`
+	Headers EscherRequestHeaders `json:"headers"`
+	Body    string               `json:"body"`
 }
 
 type EscherRequestHeaders [][2]string
