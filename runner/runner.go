@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"regexp"
 )
 
 type Runner interface {
@@ -24,6 +25,7 @@ func (sp *subProcess) Run() {
 
 	cmd := exec.Command(sp.name, sp.args...)
 
+	cmd.Env = envForSubProcess()
 	stdout, err := cmd.StdoutPipe()
 	checkError(err)
 	stderr, err := cmd.StderrPipe()
@@ -46,4 +48,14 @@ func checkError(err error) {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func envForSubProcess() []string {
+	var newEnv []string
+	for _, v := range os.Environ() {
+		if match, _ := regexp.MatchString("PORT", v); match == true {
+			newEnv = append(newEnv, v)
+		}
+	}
+	return newEnv
 }
