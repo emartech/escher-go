@@ -19,7 +19,7 @@ type subProcess struct {
 }
 
 func New(port string, name string, args []string, signal chan os.Signal) Runner {
-	return &subProcess{port: "9292", name: name, args: args, signal: signal}
+	return &subProcess{port, name, args, signal}
 }
 
 func (sp *subProcess) Run() {
