@@ -25,16 +25,16 @@ func (sp *subProcess) Run() {
 
 	cmd := exec.Command(sp.name, sp.args...)
 
-	cmd.Env = envForSubProcess()
+	cmd.Env = sp.envForSubProcess()
 	stdout, err := cmd.StdoutPipe()
-	checkError(err)
+	sp.checkError(err)
 	stderr, err := cmd.StderrPipe()
-	checkError(err)
+	sp.checkError(err)
 	stdin, err := cmd.StderrPipe()
-	checkError(err)
+	sp.checkError(err)
 
 	err = cmd.Start()
-	checkError(err)
+	sp.checkError(err)
 
 	defer cmd.Wait()
 
@@ -44,16 +44,24 @@ func (sp *subProcess) Run() {
 
 }
 
-func checkError(err error) {
+func (sp *subProcess) checkError(err error) {
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
-func envForSubProcess() []string {
+func (sp *subProcess) envForSubProcess() []string {
+	return sp.addNewPort(sp.removeOldPortFromEnv())
+}
+
+func (sp *subProcess) addNewPort(env []string) []string {
+	return append(env, "PORT="+sp.port)
+}
+
+func (sp *subProcess) removeOldPortFromEnv() []string {
 	var newEnv []string
 	for _, v := range os.Environ() {
-		if match, _ := regexp.MatchString("PORT", v); match == true {
+		if match, _ := regexp.MatchString("PORT", v); match == false {
 			newEnv = append(newEnv, v)
 		}
 	}
