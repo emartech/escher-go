@@ -1,12 +1,16 @@
 package proxy
 
 import (
+	"errors"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
 	"strings"
+
+	escher "github.com/adamluzsi/escher-go"
+	"github.com/adamluzsi/escher-go/keydb"
 )
 
 type prox struct {
@@ -25,13 +29,19 @@ func New(target string) *prox {
 
 func (p *prox) Handle(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("X-GoProxy", "GoProxy")
-	out, err := ioutil.ReadAll(r.Body)
-	defer r.Body.Close()
+	validator := Validator{}
+	keyDb := keydb.NewBySlice([][2]string{})
+	keyID, err = validator.Validate(escher.Request{}, keyDb, "header")
 	if err != nil {
-		log.Fatal(err)
+		out, err := ioutil.ReadAll(r.Body)
+		defer r.Body.Close()
+		if err != nil {
+			log.Fatal(err)
+		}
+		r.Body = NewMyReader(string(out))
+		p.proxy.ServeHTTP(w, r)
 	}
-	r.Body = NewMyReader(string(out))
-	p.proxy.ServeHTTP(w, r)
+
 }
 
 type myReader struct {
@@ -48,4 +58,11 @@ func (m *myReader) Read(p []byte) (n int, err error) {
 
 func NewMyReader(s string) *myReader {
 	return &myReader{s: strings.NewReader(s)}
+}
+
+type Validator struct {
+}
+
+func (v *Validator) Validate(request escher.Request, keyDB keydb.KeyDB, mandatoryHeaders []string) (string, error) {
+	return "API_KEY", errors.New("KACSA")
 }
