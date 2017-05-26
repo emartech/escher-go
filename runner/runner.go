@@ -12,13 +12,14 @@ type Runner interface {
 	Run()
 }
 type subProcess struct {
-	port string
-	name string
-	args []string
+	port   string
+	name   string
+	args   []string
+	signal chan os.Signal
 }
 
-func New(port string, name string, args []string) Runner {
-	return &subProcess{port, name, args}
+func New(port string, name string, args []string, signal chan os.Signal) Runner {
+	return &subProcess{port, name, args, signal}
 }
 
 func (sp *subProcess) Run() {
@@ -36,7 +37,9 @@ func (sp *subProcess) Run() {
 	err = cmd.Start()
 	sp.checkError(err)
 
-	defer cmd.Wait()
+	cmd.Wait()
+
+	go func() { cmd.Process.Signal(<-sp.signal) }()
 
 	go io.Copy(os.Stdout, stdout)
 	go io.Copy(os.Stderr, stderr)
