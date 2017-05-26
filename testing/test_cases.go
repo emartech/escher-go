@@ -2,7 +2,6 @@ package testing
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -100,34 +99,6 @@ func getTestConfigsForTopic(t testing.TB, topic string) []TestConfig {
 	return configs
 }
 
-type TestConfigExpected struct {
-	Request              escher.Request `json:"request"`
-	CanonicalizedRequest string         `json:"canonicalizedRequest"`
-	StringToSign         string         `json:"stringToSign"`
-	AuthHeader           string         `json:"authHeader"`
-	Error                string         `json:"error"`
-}
-
-type TestConfig struct {
-	ID            string
-	HeadersToSign []string           `json:"headersToSign"`
-	Title         string             `json:"title"`
-	Description   string             `json:"description"`
-	Request       escher.Request     `json:"request"`
-	Config        escher.Config      `json:"config"`
-	Expected      TestConfigExpected `json:"expected"`
-}
-
-func (testConfig TestConfig) getTitle() string {
-	var title string
-	if testConfig.Title == "" {
-		title = testConfig.ID
-	} else {
-		title = testConfig.Title + " (" + testConfig.ID + ")"
-	}
-	return title
-}
-
 func loadTestFile(t testing.TB, testSuite string, testID string) TestConfig {
 	if testing.Verbose() {
 		log.Printf("%s - %s\n", testSuite, testID)
@@ -137,7 +108,7 @@ func loadTestFile(t testing.TB, testSuite string, testID string) TestConfig {
 	// TODO: fix this rel path
 
 	var filename = filepath.Join(testSuitePath(t), testSuite+"_testsuite", testID+".json")
-	fmt.Println(filename)
+
 	content, err := ioutil.ReadFile(filename)
 
 	if err != nil {

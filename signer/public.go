@@ -25,10 +25,14 @@ func (s *signer) CanonicalizeRequest(request escher.Request, headersToSign []str
 }
 
 func (s *signer) GenerateHeader(request escher.Request, headersToSign []string) string {
-	var stringToSign = s.GetStringToSign(request, headersToSign)
-	var signingKey = s.calculateSigningKey()
 	return s.config.AlgoPrefix + "-HMAC-" + s.config.HashAlgo + " " +
 		"Credential=" + s.generateCredentials() + ", " +
 		"SignedHeaders=" + s.canonicalizeHeadersToSign(headersToSign) + ", " +
-		"Signature=" + s.calculateSignature(stringToSign, signingKey)
+		"Signature=" + s.GenerateSignature(request, headersToSign)
+}
+
+func (s *signer) GenerateSignature(request escher.Request, headersToSign []string) string {
+	var stringToSign = s.GetStringToSign(request, headersToSign)
+	var signingKey = s.calculateSigningKey()
+	return s.calculateSignature(stringToSign, signingKey)
 }

@@ -2,8 +2,6 @@ package escher
 
 import "net/url"
 
-type RequestHeaders [][2]string
-
 type Request struct {
 	Method  string         `json:"method"`
 	Url     string         `json:"url"`
