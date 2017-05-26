@@ -31,7 +31,7 @@ func (p *prox) Handle(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("X-GoProxy", "GoProxy")
 	validator := Validator{}
 	keyDb := keydb.NewBySlice([][2]string{})
-	keyID, err = validator.Validate(escher.Request{}, keyDb, "header")
+	_, err := validator.Validate(escher.Request{}, keyDb, nil)
 	if err != nil {
 		out, err := ioutil.ReadAll(r.Body)
 		defer r.Body.Close()
