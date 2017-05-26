@@ -15,15 +15,18 @@ import (
 var port string
 
 func main() {
-	targetPort := "9393"
+	targetPort := "2222"
 	signals := make(chan os.Signal, 1)
-
+	if len(os.Args) < 3 {
+		os.Args = append(os.Args, "-p")
+		os.Args = append(os.Args, os.Getenv("PORT"))
+	}
 	cmd := runner.New(targetPort, os.Args[1], os.Args[2:], signals).Run()
 	defer cmd.Wait()
 
-	proxy := proxy.New("http://localhost:9292")
+	proxy := proxy.New("http://localhost:" + targetPort)
 	http.HandleFunc("/", proxy.Handle)
-	http.ListenAndServe(":9393", nil)
+	http.ListenAndServe(":9292", nil)
 	signal.Notify(signals, os.Interrupt)
 
 }

@@ -23,9 +23,9 @@ func New(port string, name string, args []string, signal chan os.Signal) Runner 
 }
 
 func (sp *subProcess) Run() *exec.Cmd {
-	cmd := exec.Command(sp.name, sp.args...)
 
-	cmd.Env = sp.envForSubProcess()
+	cmd := exec.Command(sp.name, sp.args...)
+	cmd.Args[2] = sp.port
 
 	stdout, err := cmd.StdoutPipe()
 	sp.checkError(err)
@@ -55,7 +55,8 @@ func (sp *subProcess) envForSubProcess() []string {
 }
 
 func (sp *subProcess) addNewPort(env []string) []string {
-	return append(env, "PORT="+sp.port)
+	env = append(env, "PORT="+sp.port)
+	return env
 }
 
 func (sp *subProcess) removeOldPortFromEnv() []string {
