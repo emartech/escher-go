@@ -1,33 +1,97 @@
 package escher
 
-import "time"
-
 type Config struct {
+	Date            string
+	HashAlgo        string
+	ApiSecret       string
 	VendorKey       string
 	AlgoPrefix      string
-	HashAlgo        string
-	CredentialScope string
-	ApiSecret       string
 	AccessKeyId     string
 	AuthHeaderName  string
 	DateHeaderName  string
-	Date            string
+	CredentialScope string
 }
 
 func (c Config) ShortDate() string {
 	return c.Date[:8]
 }
 
-func (c Config) Reconfig(t time.Time, apiKeyID, apiSecret string) Config {
+func (c Config) Reconfig(date, hashAlgo, credentialScope, apiKeyID, apiSecret string) Config {
 	return Config{
+		HashAlgo:        hashAlgo,
 		AccessKeyId:     apiKeyID,
 		ApiSecret:       apiSecret,
-		HashAlgo:        c.HashAlgo,
 		VendorKey:       c.VendorKey,
 		AlgoPrefix:      c.AlgoPrefix,
+		CredentialScope: credentialScope,
 		AuthHeaderName:  c.AuthHeaderName,
 		DateHeaderName:  c.DateHeaderName,
-		CredentialScope: c.CredentialScope,
-		Date:            t.Format(time.RFC3339),
+		Date:            date,
 	}
+}
+
+func (c Config) GetHashAlgo() string {
+	if c.HashAlgo != "" {
+		return c.HashAlgo
+	}
+
+	return "SHA256"
+}
+
+func (c Config) GetAlgoPrefix() string {
+	if c.AlgoPrefix != "" {
+		return c.AlgoPrefix
+	}
+
+	return "ESR"
+}
+
+func (c Config) GetVendorKey() string {
+	if c.VendorKey != "" {
+		return c.VendorKey
+	}
+
+	return "Escher"
+}
+
+func (c Config) GetAuthHeaderName() string {
+	if c.AuthHeaderName != "" {
+		return c.AuthHeaderName
+	}
+
+	return "X-Escher-Auth"
+}
+
+func (c Config) GetDateHeaderName() string {
+	if c.DateHeaderName != "" {
+		return c.DateHeaderName
+	}
+
+	return "X-Escher-Date"
+}
+
+func (c Config) IsSignatureInQuery(r Request) bool {
+	queryKey := c.QueryKeyFor("Signature")
+
+	queryParts, err := r.QueryParts()
+
+	if err != nil {
+		return false
+	}
+
+	for _, part := range queryParts {
+		if part[0] == queryKey {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (c Config) SignatureQueryKey() string {
+	return c.QueryKeyFor("Signature")
+}
+
+func (c Config) QueryKeyFor(key string) string {
+	return "X-" + c.GetVendorKey() + "-" + key
 }

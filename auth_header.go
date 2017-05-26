@@ -11,7 +11,7 @@ func (r Request) AuthHeaderBy(c Config) *authenticationHeader {
 
 func (a *authenticationHeader) fetchAuthHeaderString() string {
 	for _, headerPair := range a.r.Headers {
-		if headerPair[0] == a.c.AuthHeaderName {
+		if headerPair[0] == a.c.GetAuthHeaderName() {
 			return headerPair[1]
 		}
 	}

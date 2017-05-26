@@ -4,7 +4,6 @@ import (
 	"errors"
 	"net/url"
 	"regexp"
-	"strconv"
 	"strings"
 	"time"
 
@@ -35,11 +34,10 @@ func (v *validator) Validate(request escher.Request, keyDB keydb.KeyDB, mandator
 
 	expectedHeaders := []string{"Host"}
 
-	_, signatureIsNotInQuery := v.getSigningParam("Signature", queryParts)
-	signatureInQuery := signatureIsNotInQuery == nil
+	signatureInQuery := v.config.IsSignatureInQuery(request)
 
-	if signatureIsNotInQuery != nil {
-		expectedHeaders = append(expectedHeaders, v.config.AuthHeaderName, v.config.DateHeaderName)
+	if !signatureInQuery {
+		expectedHeaders = append(expectedHeaders, v.config.GetAuthHeaderName(), v.config.GetDateHeaderName())
 	}
 
 	for _, headerKey := range expectedHeaders {
@@ -49,11 +47,10 @@ func (v *validator) Validate(request escher.Request, keyDB keydb.KeyDB, mandator
 		}
 	}
 
-	if method == "GET" && signatureIsNotInQuery == nil {
+	if method == "GET" && signatureInQuery {
 		body = "UNSIGNED-PAYLOAD"
 
-		rawDate, err := v.getSigningParam("Date", queryParts)
-		_ = rawDate
+		rawDate, err = v.getSigningParam("Date", queryParts)
 
 		if err != nil {
 			return "", MissingDateParam
@@ -64,20 +61,19 @@ func (v *validator) Validate(request escher.Request, keyDB keydb.KeyDB, mandator
 			return "", err
 		}
 
-		// queryParts.delete [query_key_for('Signature'), signature]
-		// queryParts = queryParts.map { |k, v| [k, v] }
+		queryParts = queryParts.Without(v.queryKeyFor("Signature"))
 	} else {
 
-		rawDate, ok := headers.Get(v.config.DateHeaderName)
-		_ = rawDate
+		var ok bool
+		rawDate, ok = headers.Get(v.config.GetDateHeaderName())
 
 		if !ok {
-			return "", errors.New("The " + v.config.DateHeaderName + " header is missing")
+			return "", errors.New("The " + v.config.GetDateHeaderName() + " header is missing")
 		}
 
-		authHeader, ok := headers.Get(v.config.AuthHeaderName)
+		authHeader, ok := headers.Get(v.config.GetAuthHeaderName())
 		if !ok {
-			return "", errors.New("The " + v.config.AuthHeaderName + " header is missing")
+			return "", errors.New("The " + v.config.GetAuthHeaderName() + " header is missing")
 		}
 
 		algorithm, apiKeyID, shortDate, credentialScope, signedHeaders, signature, expires, err = v.getAuthPartsFromHeader(authHeader)
@@ -86,7 +82,7 @@ func (v *validator) Validate(request escher.Request, keyDB keydb.KeyDB, mandator
 		}
 	}
 
-	date, err := time.Parse(time.RFC3339, rawDate)
+	date, err := parseTime(rawDate)
 
 	if err != nil {
 		return "", err
@@ -95,11 +91,11 @@ func (v *validator) Validate(request escher.Request, keyDB keydb.KeyDB, mandator
 	apiSecret, err := keyDB.GetSecret(apiKeyID)
 
 	if err != nil {
-		return "", errors.New("Invalid Escher key")
+		return "", errors.New("Invalid API key")
 	}
 
 	if algorithm != "SHA256" && algorithm != "SHA512" {
-		return "", errors.New("Invalid hash algorithm, only SHA256 and SHA512 are allowed")
+		return "", errors.New("Only SHA256 and SHA512 hash algorithms are allowed")
 	}
 
 	if !isValidRequestMethod(method) {
@@ -117,16 +113,20 @@ func (v *validator) Validate(request escher.Request, keyDB keydb.KeyDB, mandator
 		return "", err
 	}
 
+	if date.Format("20060102") != shortDate {
+		return "", errors.New("The credential date does not match with the request date")
+	}
+
+	if !v.isDateWithinRange(date, expires) {
+		return "", errors.New("The request date is not within the accepted time range")
+	}
+
 	if v.config.ShortDate() != shortDate {
 		return "", errors.New("Invalid date in authorization header, it should equal with date header")
 	}
 
-	if isDateWithinRange(date, expires) {
-		return "", errors.New("The request date is not within the accepted time range")
-	}
-
 	if v.config.CredentialScope != credentialScope {
-		return "", errors.New("Invalid Credential Scope")
+		return "", errors.New("The credential scope is invalid")
 	}
 
 	if !isSignedHeadersInlcude(signedHeaders, "host") {
@@ -145,11 +145,12 @@ func (v *validator) Validate(request escher.Request, keyDB keydb.KeyDB, mandator
 		return "", errors.New("Only the host header should be signed")
 	}
 
-	if !signatureInQuery && !isSignedHeadersInlcude(signedHeaders, v.config.DateHeaderName) {
+	if !signatureInQuery && !isSignedHeadersInlcude(signedHeaders, v.config.GetDateHeaderName()) {
 		return "", errors.New("The date header is not signed")
 	}
 
-	s := signer.New(v.config.Reconfig(date, apiKeyID, apiSecret))
+	s := signer.New(v.config.Reconfig(date.Format(EscherDateFormat), algorithm, credentialScope, apiKeyID, apiSecret))
+
 	expectedSignature := s.GenerateSignature(request, signedHeaders)
 
 	if expectedSignature != signature {
@@ -163,31 +164,7 @@ func isSignedHeadersOnlyInclude(signedHeaders []string, keyword string) bool {
 	return isSignedHeadersInlcude(signedHeaders, keyword) && len(signedHeaders) == 1
 }
 
-const authHeaderRegexpBase = "-HMAC-(?<algo>[A-Z0-9\\,]+) Credential=(?<apiKeyID>[A-Za-z0-9\\-_]+)/(?<shortDate>[0-9]{8})/(?<credentials>[A-Za-z0-9\\-_ /]+), SignedHeaders=(?<signedHeaders>[A-Za-z\\-;]+), Signature=(?<signature>[0-9a-f]+)$"
-
-func (v *validator) getAuthPartsFromHeader(authHeader string) (algorithm, apiKeyID, shortDate, credentialScope string, signedHeaders []string, signature string, expires uint64, err error) {
-	expr := regexp.QuoteMeta(v.config.AlgoPrefix) + authHeaderRegexpBase
-	rgx, err := regexp.Compile(expr)
-
-	if err != nil {
-		return
-	}
-
-	m, err := rgxNamedMatch(rgx, authHeader)
-
-	if err != nil {
-		return
-	}
-
-	algorithm = m["algo"]
-	apiKeyID = m["apiKeyID"]
-	shortDate = m["shortDate"]
-	credentialScope = m["credentials"]
-	signedHeaders = strings.Split(m["signedHeaders"], ":")
-	signature = m["signature"]
-
-	return
-}
+const authHeaderRegexpBase = "-HMAC-(?P<algo>[A-Z0-9\\,]+) Credential=(?P<apiKeyID>[A-Za-z0-9\\-_]+)/(?P<shortDate>[0-9]{8})/(?P<credentials>[A-Za-z0-9\\-_ /]+), SignedHeaders=(?P<signedHeaders>[A-Za-z\\-;]+), Signature=(?P<signature>[0-9a-f]+)$"
 
 func rgxNamedMatch(rgx *regexp.Regexp, text string) (map[string]string, error) {
 
@@ -195,7 +172,7 @@ func rgxNamedMatch(rgx *regexp.Regexp, text string) (map[string]string, error) {
 	subexpNames := rgx.SubexpNames()
 
 	if len(match) != len(subexpNames) {
-		return nil, errors.New("regexp not matchable")
+		return nil, errors.New("Could not parse auth header")
 	}
 
 	result := make(map[string]string)
@@ -209,7 +186,7 @@ func rgxNamedMatch(rgx *regexp.Regexp, text string) (map[string]string, error) {
 }
 
 func (v *validator) queryKeyFor(key string) string {
-	return "X-" + v.config.VendorKey + "-" + key
+	return "X-" + v.config.GetVendorKey() + "-" + key
 }
 
 var SigningParamNotFound = errors.New("Signing Param not found")
@@ -225,49 +202,10 @@ func (v *validator) getSigningParam(key string, queryParts escher.QueryParts) (s
 	return "", SigningParamNotFound
 }
 
-func (v *validator) getAuthPartsFromQuery(queryParts escher.QueryParts) (algorithm, apiKeyID, shortDate, credentialScope string, signedHeaders []string, signature string, expires uint64, err error) {
-	rawExpires, err := v.getSigningParam("Expires", queryParts)
-	if err != nil {
-		return
-	}
-
-	expires, err = strconv.ParseUint(rawExpires, 10, 0)
-	if err != nil {
-		return
-	}
-
-	credential, err := v.getSigningParam("Credentials", queryParts)
-	if err != nil {
-		return
-	}
-	credentialParts := strings.SplitN(credential, "/", 3)
-	apiKeyID, shortDate, credentialScope = credentialParts[0], credentialParts[1], credentialParts[2]
-
-	rawSignedHeaders, err := v.getSigningParam("SignedHeaders", queryParts)
-	if err != nil {
-		return
-	}
-	signedHeaders = strings.Split(rawSignedHeaders, ";")
-
-	rawAlgorithm, err := v.getSigningParam("Algorithm", queryParts)
-	if err != nil {
-		return
-	}
-
-	algorithm, err = v.parseAlgo(rawAlgorithm)
-	if err != nil {
-		return
-	}
-
-	signature, err = v.getSigningParam("Signature", queryParts)
-
-	return
-}
-
-const parseAlgoRgxBase = "-HMAC-(?<algo>[A-Z0-9\\,]+)$"
+const parseAlgoRgxBase = "-HMAC-(?P<algo>[A-Z0-9\\,]+)$"
 
 func (v *validator) parseAlgo(algorithm string) (string, error) {
-	rgx, err := regexp.Compile("^" + regexp.QuoteMeta(v.config.AlgoPrefix) + parseAlgoRgxBase)
+	rgx, err := regexp.Compile("^" + regexp.QuoteMeta(v.config.GetAlgoPrefix()) + parseAlgoRgxBase)
 	if err != nil {
 		return "", err
 	}
@@ -282,10 +220,11 @@ func (v *validator) parseAlgo(algorithm string) (string, error) {
 
 const clockSkew = 300
 
-func isDateWithinRange(t time.Time, expires uint64) bool {
-	timeNow := time.Now()
-
-	return t.Add(-1*clockSkew*time.Second).After(timeNow) && t.Add(time.Duration(clockSkew+expires)*time.Second).Before(timeNow)
+func (v *validator) isDateWithinRange(t time.Time, expires uint64) bool {
+	timeNow := v.Time()
+	min := t.Add(-1 * clockSkew * time.Second)
+	max := t.Add(time.Duration(clockSkew+expires) * time.Second)
+	return min.Before(timeNow) && max.After(timeNow)
 }
 
 var acceptedRequestMethods = map[string]struct{}{
@@ -313,4 +252,49 @@ func isSignedHeadersInlcude(signedHeaders []string, keyword string) bool {
 		}
 	}
 	return false
+}
+
+const EscherDateFormat = "20060102T150405Z"
+
+var acceptedTimeFormats = []string{
+	time.ANSIC,
+	time.UnixDate,
+	time.RubyDate,
+	time.RFC822,
+	time.RFC822Z,
+	time.RFC850,
+	time.RFC1123,
+	time.RFC1123Z,
+	time.RFC3339,
+	time.RFC3339Nano,
+	time.Kitchen,
+	time.Stamp,
+	time.StampMilli,
+	time.StampMicro,
+	time.StampNano,
+	EscherDateFormat,
+}
+
+func parseTime(timeStr string) (time.Time, error) {
+	for _, layout := range acceptedTimeFormats {
+		t, err := time.Parse(layout, timeStr)
+
+		if err == nil {
+			return t, err
+		}
+	}
+
+	return time.Time{}, errors.New("no layout found for " + timeStr)
+}
+
+func (v *validator) Time() time.Time {
+	if v.config.Date != "" {
+		t, err := parseTime(v.config.Date)
+		if err != nil {
+			panic(err)
+		}
+		return t
+	}
+
+	return time.Now()
 }

@@ -136,22 +136,7 @@ func testSuitePath(t testing.TB) string {
 	return testSuitePath
 }
 
-func EachTestConfigFor(t testing.TB, topic string, tester func(escher.Config, TestConfig) bool) {
-	testedCases := make(map[bool]struct{})
-
-	for _, testConfig := range getTestConfigsForTopic(t, topic) {
-		config := fixedConfigBy(testConfig.Config)
-		t.Log(testConfig.getTitle())
-		t.Log(testConfig.Description)
-		testedCases[tester(config, testConfig)] = struct{}{}
-	}
-
-	if _, ok := testedCases[true]; !ok {
-		t.Fatal("No test case was used")
-	}
-}
-
-func fixedConfigBy(config escher.Config) escher.Config {
+func fixedConfigBy(tb testing.TB, config escher.Config) escher.Config {
 	var t, err = time.Parse("2006-01-02T15:04:05.999999Z", config.Date)
 	if err != nil {
 		t, err = time.Parse("Fri, 02 Jan 2006 15:04:05 GMT", config.Date)
@@ -160,5 +145,6 @@ func fixedConfigBy(config escher.Config) escher.Config {
 		t = time.Now().UTC()
 	}
 	config.Date = t.Format("20060102T150405Z")
+
 	return config
 }

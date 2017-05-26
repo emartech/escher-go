@@ -29,6 +29,7 @@ func (r Request) QueryParts() (QueryParts, error) {
 	}
 
 	queryParts := make(QueryParts, 0)
+
 	for key, values := range url.Query() {
 		for _, value := range values {
 			queryParts = append(queryParts, [2]string{key, value})
@@ -36,4 +37,14 @@ func (r Request) QueryParts() (QueryParts, error) {
 	}
 
 	return queryParts, nil
+}
+
+func (qp QueryParts) Without(key string) QueryParts {
+	nqp := make(QueryParts, 0, len(qp))
+	for _, kv := range qp {
+		if kv[0] != key {
+			nqp = append(nqp, kv)
+		}
+	}
+	return nqp
 }
