@@ -1,12 +1,16 @@
-package escher
+package testing
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
+	"os"
+	"path/filepath"
 	"testing"
+	"time"
 
-	"github.com/stretchr/testify/assert"
+	escher "github.com/adamluzsi/escher-go"
 )
 
 var tests = map[string]map[string][]string{
@@ -56,9 +60,9 @@ var tests = map[string]map[string][]string{
 			"signrequest-support-custom-config",
 			"signrequest-only-sign-specified-headers",
 		},
-		"presignUrl": []string{
-			"presignurl-valid-with-path-query",
-		},
+		// "presignUrl": []string{
+		// 	"presignurl-valid-with-path-query",
+		// },
 		"authenticate": []string{
 			"authenticate-valid-authentication-datein-expiretime",
 			"authenticate-valid-get-vanilla-empty-query",
@@ -97,10 +101,11 @@ func getTestConfigsForTopic(t testing.TB, topic string) []TestConfig {
 }
 
 type TestConfigExpected struct {
-	Request              EscherRequest `json:"request"`
-	CanonicalizedRequest string        `json:"canonicalizedRequest"`
-	StringToSign         string        `json:"stringToSign"`
-	AuthHeader           string        `json:"authHeader"`
+	Request              escher.Request `json:"request"`
+	CanonicalizedRequest string         `json:"canonicalizedRequest"`
+	StringToSign         string         `json:"stringToSign"`
+	AuthHeader           string         `json:"authHeader"`
+	Error                string         `json:"error"`
 }
 
 type TestConfig struct {
@@ -108,8 +113,8 @@ type TestConfig struct {
 	HeadersToSign []string           `json:"headersToSign"`
 	Title         string             `json:"title"`
 	Description   string             `json:"description"`
-	Request       EscherRequest      `json:"request"`
-	Config        EscherConfig       `json:"config"`
+	Request       escher.Request     `json:"request"`
+	Config        escher.Config      `json:"config"`
 	Expected      TestConfigExpected `json:"expected"`
 }
 
@@ -129,7 +134,10 @@ func loadTestFile(t testing.TB, testSuite string, testID string) TestConfig {
 	}
 
 	var testConfig TestConfig
-	var filename = testSuite + "_testsuite/" + testID + ".json"
+	// TODO: fix this rel path
+
+	var filename = filepath.Join(testSuitePath(t), testSuite+"_testsuite", testID+".json")
+	fmt.Println(filename)
 	content, err := ioutil.ReadFile(filename)
 
 	if err != nil {
@@ -141,14 +149,30 @@ func loadTestFile(t testing.TB, testSuite string, testID string) TestConfig {
 	return testConfig
 }
 
-func eachTestConfigFor(t testing.TB, topic string, tester func(EscherConfig, TestConfig) bool) {
+func testSuitePath(t testing.TB) string {
+	testSuitePath := os.Getenv("TEST_SUITE_PATH")
+
+	if testSuitePath == "" {
+		t.Fatal("TEST_SUITE_PATH env is missing, can't find the escher tests")
+	}
+
+	_, err := os.Stat(testSuitePath)
+
+	if err != nil && os.IsNotExist(err) {
+		t.Fatal("given TEST_SUITE_PATH IsNotExists!")
+	}
+
+	return testSuitePath
+}
+
+func EachTestConfigFor(t testing.TB, topic string, tester func(escher.Config, TestConfig) bool) {
 	testedCases := make(map[bool]struct{})
 
 	for _, testConfig := range getTestConfigsForTopic(t, topic) {
-		var escher = Escher(testConfig.Config)
+		config := fixedConfigBy(testConfig.Config)
 		t.Log(testConfig.getTitle())
 		t.Log(testConfig.Description)
-		testedCases[tester(escher, testConfig)] = struct{}{}
+		testedCases[tester(config, testConfig)] = struct{}{}
 	}
 
 	if _, ok := testedCases[true]; !ok {
@@ -156,60 +180,14 @@ func eachTestConfigFor(t testing.TB, topic string, tester func(EscherConfig, Tes
 	}
 }
 
-func TestCanonicalizeRequest(t *testing.T) {
-	t.Log("CanonicalizeRequest should return with a proper string")
-	eachTestConfigFor(t, "signRequest", func(escher EscherConfig, testConfig TestConfig) bool {
-		if testConfig.Expected.CanonicalizedRequest == "" {
-			return false
-		}
-
-		canonicalizedRequest := escher.CanonicalizeRequest(testConfig.Request, testConfig.HeadersToSign)
-
-		return assert.Equal(t, canonicalizedRequest, testConfig.Expected.CanonicalizedRequest, "canonicalizedRequest should be eq")
-	})
-}
-
-func TestGetStringToSign(t *testing.T) {
-	t.Log("GetStringToSign should return with a proper string")
-	eachTestConfigFor(t, "signRequest", func(escher EscherConfig, testConfig TestConfig) bool {
-		if testConfig.Expected.StringToSign == "" {
-			return false
-		}
-
-		stringToSign := escher.GetStringToSign(testConfig.Request, testConfig.HeadersToSign)
-		return assert.Equal(t, stringToSign, testConfig.Expected.StringToSign, "stringToSign expected to eq with the test config expectation")
-	})
-}
-
-func TestGenerateHeader(t *testing.T) {
-	t.Log("GenerateHeader should return with a proper string")
-	eachTestConfigFor(t, "signRequest", func(escher EscherConfig, testConfig TestConfig) bool {
-		if testConfig.Expected.AuthHeader == "" {
-			return false
-		}
-
-		authHeader := escher.GenerateHeader(testConfig.Request, testConfig.HeadersToSign)
-		return assert.Equal(t, testConfig.Expected.AuthHeader, authHeader, "authHeader generation failed")
-	})
-}
-
-func TestSignRequest(t *testing.T) {
-	t.Log("SignRequest should return with a properly signed request")
-	eachTestConfigFor(t, "signRequest", func(escher EscherConfig, testConfig TestConfig) bool {
-		if testConfig.Expected.Request.Method == "" {
-			return false
-		}
-
-		request := escher.SignRequest(testConfig.Request, testConfig.HeadersToSign)
-		return assert.Equal(t, testConfig.Expected.Request, request, "Requests should be eq")
-	})
-}
-
-func TestAuthenticateValidRequest(t *testing.T) {
-	t.Log("Authenticate the incomming request")
-	eachTestConfigFor(t, "authenticate", func(escher EscherConfig, testConfig TestConfig) bool {
-
-		escher.Authenticate(testConfig.Request)
-		return true
-	})
+func fixedConfigBy(config escher.Config) escher.Config {
+	var t, err = time.Parse("2006-01-02T15:04:05.999999Z", config.Date)
+	if err != nil {
+		t, err = time.Parse("Fri, 02 Jan 2006 15:04:05 GMT", config.Date)
+	}
+	if err != nil {
+		t = time.Now().UTC()
+	}
+	config.Date = t.Format("20060102T150405Z")
+	return config
 }

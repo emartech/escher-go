@@ -1,6 +1,6 @@
 package escher
 
-type EscherConfig struct {
+type Config struct {
 	VendorKey       string
 	AlgoPrefix      string
 	HashAlgo        string
@@ -10,4 +10,8 @@ type EscherConfig struct {
 	AuthHeaderName  string
 	DateHeaderName  string
 	Date            string
+}
+
+func (c Config) ShortDate() string {
+	return c.Date[:8]
 }
