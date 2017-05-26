@@ -9,7 +9,7 @@ import (
 )
 
 type Runner interface {
-	Run()
+	Run() *exec.Cmd
 }
 type subProcess struct {
 	port   string
@@ -22,28 +22,25 @@ func New(port string, name string, args []string, signal chan os.Signal) Runner 
 	return &subProcess{port, name, args, signal}
 }
 
-func (sp *subProcess) Run() {
-
+func (sp *subProcess) Run() *exec.Cmd {
 	cmd := exec.Command(sp.name, sp.args...)
 
 	cmd.Env = sp.envForSubProcess()
+
 	stdout, err := cmd.StdoutPipe()
 	sp.checkError(err)
 	stderr, err := cmd.StderrPipe()
 	sp.checkError(err)
-	stdin, err := cmd.StderrPipe()
-	sp.checkError(err)
-
-	err = cmd.Start()
-	sp.checkError(err)
-
-	cmd.Wait()
 
 	go func() { cmd.Process.Signal(<-sp.signal) }()
 
 	go io.Copy(os.Stdout, stdout)
 	go io.Copy(os.Stderr, stderr)
-	go io.Copy(os.Stdin, stdin)
+
+	err = cmd.Start()
+	sp.checkError(err)
+
+	return cmd
 
 }
 

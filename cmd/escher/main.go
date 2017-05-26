@@ -1,36 +1,30 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net"
+	"net/http"
 	"os"
 	"os/signal"
 
+	"github.com/adamluzsi/escher-go/proxy"
 	"github.com/adamluzsi/escher-go/runner"
 )
 
 var port string
 
 func main() {
-
-	targetPort := "9292"
-
+	targetPort := "9393"
 	signals := make(chan os.Signal, 1)
+
+	cmd := runner.New(targetPort, os.Args[1], os.Args[2:], signals).Run()
+	defer cmd.Wait()
+
+	proxy := proxy.New("http://localhost:9292")
+	http.HandleFunc("/", proxy.Handle)
+	http.ListenAndServe(":9393", nil)
 	signal.Notify(signals, os.Interrupt)
-
-	incoming, err := net.Listen("tcp", ":"+os.Getenv("PORT"))
-	checkForError(err, "could not start server")
-
-	client, err := incoming.Accept()
-	checkForError(err, "could not accept cleint connection")
-
-	defer client.Close()
-
-	target, err := net.Dial("tcp", targetPort)
-	checkForError(err, "could not connect to target")
-	defer target.Close()
-
-	runner.New(targetPort, os.Args[1], os.Args[2:], signals)
 
 }
 
@@ -38,4 +32,22 @@ func checkForError(err error, msg string) {
 	if err != nil {
 		log.Fatal(msg, err)
 	}
+}
+
+func nem_kell() {
+	signals := make(chan os.Signal)
+	targetPort := "9393"
+	incoming, err := net.Listen("tcp", fmt.Sprintf(":%s", os.Getenv("PORT")))
+	checkForError(err, "could not start server")
+	cmd := runner.New(targetPort, os.Args[1], os.Args[2:], signals).Run()
+	defer cmd.Wait()
+
+	client, err := incoming.Accept()
+	checkForError(err, "could not accept cleint connection")
+
+	target, err := net.Dial("tcp", targetPort)
+	checkForError(err, "could not connect to target")
+	target.Close()
+	client.Close()
+
 }
