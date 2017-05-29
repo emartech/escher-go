@@ -3,11 +3,11 @@ package signer
 import escher "github.com/adamluzsi/escher-go"
 
 type Signer interface {
-	CanonicalizeRequest(request escher.Request, headersToSign []string) string
-	GetStringToSign(request escher.Request, headersToSign []string) string
-	GenerateHeader(request escher.Request, headersToSign []string) string
-	SignRequest(request escher.Request, headersToSign []string) escher.Request
-	GenerateSignature(request escher.Request, headersToSign []string) string
+	CanonicalizeRequest(escher.Request, []string) string
+	GetStringToSign(escher.Request, []string) string
+	GenerateHeader(escher.Request, []string) string
+	SignRequest(escher.Request, []string) escher.Request
+	GenerateSignature(escher.Request, []string) string
 }
 
 type signer struct {
