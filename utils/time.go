@@ -8,6 +8,7 @@ import (
 const EscherDateFormat = "20060102T150405Z"
 
 var acceptedTimeFormats = []string{
+	EscherDateFormat,
 	time.ANSIC,
 	time.UnixDate,
 	time.RubyDate,
@@ -23,7 +24,6 @@ var acceptedTimeFormats = []string{
 	time.StampMilli,
 	time.StampMicro,
 	time.StampNano,
-	EscherDateFormat,
 }
 
 func ParseTime(timeStr string) (time.Time, error) {
