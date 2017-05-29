@@ -6,7 +6,7 @@ import (
 
 func (s *signer) SignRequest(request escher.Request, headersToSign []string) escher.Request {
 	var authHeader = s.GenerateHeader(request, headersToSign)
-	for _, header := range s.getDefaultHeaders(request.Headers) {
+	for _, header := range s.getDefaultHeaders(request) {
 		request.Headers = append(request.Headers, header)
 	}
 	request.Headers = append(request.Headers, [2]string{s.config.AuthHeaderName, authHeader})
@@ -18,8 +18,8 @@ func (s *signer) CanonicalizeRequest(request escher.Request, headersToSign []str
 	var canonicalizedRequest = request.Method + "\n" +
 		canonicalizePath(url.Path) + "\n" +
 		canonicalizeQuery(url.Query) + "\n" +
-		s.canonicalizeHeaders(request.Headers, headersToSign) + "\n" +
-		s.canonicalizeHeadersToSign(headersToSign) + "\n" +
+		s.canonicalizeHeaders(request, headersToSign) + "\n" +
+		s.canonicalizeHeadersToSign(request, headersToSign) + "\n" +
 		s.computeDigest(request.Body)
 	return canonicalizedRequest
 }
@@ -27,7 +27,7 @@ func (s *signer) CanonicalizeRequest(request escher.Request, headersToSign []str
 func (s *signer) GenerateHeader(request escher.Request, headersToSign []string) string {
 	return s.config.AlgoPrefix + "-HMAC-" + s.config.HashAlgo + " " +
 		"Credential=" + s.generateCredentials() + ", " +
-		"SignedHeaders=" + s.canonicalizeHeadersToSign(headersToSign) + ", " +
+		"SignedHeaders=" + s.canonicalizeHeadersToSign(request, headersToSign) + ", " +
 		"Signature=" + s.GenerateSignature(request, headersToSign)
 }
 
