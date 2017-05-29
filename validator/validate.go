@@ -10,6 +10,7 @@ import (
 	escher "github.com/adamluzsi/escher-go"
 	"github.com/adamluzsi/escher-go/keydb"
 	"github.com/adamluzsi/escher-go/signer"
+	"github.com/adamluzsi/escher-go/utils"
 )
 
 var (
@@ -82,7 +83,7 @@ func (v *validator) Validate(request escher.Request, keyDB keydb.KeyDB, mandator
 		}
 	}
 
-	date, err := parseTime(rawDate)
+	date, err := utils.ParseTime(rawDate)
 
 	if err != nil {
 		return "", err
@@ -149,7 +150,7 @@ func (v *validator) Validate(request escher.Request, keyDB keydb.KeyDB, mandator
 		return "", errors.New("The date header is not signed")
 	}
 
-	s := signer.New(v.config.Reconfig(date.Format(EscherDateFormat), algorithm, credentialScope, apiKeyID, apiSecret))
+	s := signer.New(v.config.Reconfig(date.Format(utils.EscherDateFormat), algorithm, credentialScope, apiKeyID, apiSecret))
 
 	expectedSignature := s.GenerateSignature(request, signedHeaders)
 
@@ -254,42 +255,9 @@ func isSignedHeadersInlcude(signedHeaders []string, keyword string) bool {
 	return false
 }
 
-const EscherDateFormat = "20060102T150405Z"
-
-var acceptedTimeFormats = []string{
-	time.ANSIC,
-	time.UnixDate,
-	time.RubyDate,
-	time.RFC822,
-	time.RFC822Z,
-	time.RFC850,
-	time.RFC1123,
-	time.RFC1123Z,
-	time.RFC3339,
-	time.RFC3339Nano,
-	time.Kitchen,
-	time.Stamp,
-	time.StampMilli,
-	time.StampMicro,
-	time.StampNano,
-	EscherDateFormat,
-}
-
-func parseTime(timeStr string) (time.Time, error) {
-	for _, layout := range acceptedTimeFormats {
-		t, err := time.Parse(layout, timeStr)
-
-		if err == nil {
-			return t, err
-		}
-	}
-
-	return time.Time{}, errors.New("no layout found for " + timeStr)
-}
-
 func (v *validator) Time() time.Time {
 	if v.config.Date != "" {
-		t, err := parseTime(v.config.Date)
+		t, err := utils.ParseTime(v.config.Date)
 		if err != nil {
 			panic(err)
 		}
