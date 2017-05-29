@@ -1,46 +1,31 @@
 package signer
 
 import (
-	"fmt"
-	"os"
-	"strings"
-
 	escher "github.com/adamluzsi/escher-go"
 )
 
 func (s *signer) SignRequest(request escher.Request, headersToSign []string) escher.Request {
 	var authHeader = s.GenerateHeader(request, headersToSign)
-	for _, header := range s.getDefaultHeaders(request.Headers, headersToSign) {
+	for _, header := range s.getDefaultHeaders(request.Headers) {
 		request.Headers = append(request.Headers, header)
 	}
-	request.Headers = append(request.Headers, [2]string{s.config.GetAuthHeaderName(), authHeader})
+	request.Headers = append(request.Headers, [2]string{s.config.AuthHeaderName, authHeader})
 	return request
 }
 
-var inDebug = os.Getenv("DEBUG") != ""
-
 func (s *signer) CanonicalizeRequest(request escher.Request, headersToSign []string) string {
 	var url = parsePathQuery(request.Url)
-	parts := make([]string, 0)
-	parts = append(parts, request.Method)
-	parts = append(parts, canonicalizePath(url.Path))
-	parts = append(parts, s.canonicalizeQuery(request))
-	parts = append(parts, s.canonicalizeHeaders(request, headersToSign))
-	parts = append(parts, s.canonicalizeHeadersToSign(headersToSign))
-	parts = append(parts, s.computeDigest(s.computeDigestMessageBy(request)))
-	canonicalizedRequest := strings.Join(parts, "\n")
-
-	if inDebug {
-		fmt.Println(canonicalizedRequest)
-		fmt.Println("--\n\n")
-		fmt.Println("--\n\n")
-	}
-
+	var canonicalizedRequest = request.Method + "\n" +
+		canonicalizePath(url.Path) + "\n" +
+		canonicalizeQuery(url.Query) + "\n" +
+		s.canonicalizeHeaders(request.Headers, headersToSign) + "\n" +
+		s.canonicalizeHeadersToSign(headersToSign) + "\n" +
+		s.computeDigest(request.Body)
 	return canonicalizedRequest
 }
 
 func (s *signer) GenerateHeader(request escher.Request, headersToSign []string) string {
-	return s.config.GetAlgoPrefix() + "-HMAC-" + s.config.GetHashAlgo() + " " +
+	return s.config.AlgoPrefix + "-HMAC-" + s.config.HashAlgo + " " +
 		"Credential=" + s.generateCredentials() + ", " +
 		"SignedHeaders=" + s.canonicalizeHeadersToSign(headersToSign) + ", " +
 		"Signature=" + s.GenerateSignature(request, headersToSign)

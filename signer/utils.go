@@ -3,7 +3,6 @@ package signer
 import (
 	"crypto/sha256"
 	"crypto/sha512"
-	"strings"
 
 	"github.com/PuerkitoBio/purell"
 	escher "github.com/adamluzsi/escher-go"
@@ -11,6 +10,8 @@ import (
 	"hash"
 	"net/url"
 	"regexp"
+	"sort"
+	"strings"
 )
 
 type parsedPathQuery struct {
@@ -34,24 +35,13 @@ func normalizeHeaderValue(value string) string {
 	return strings.TrimSpace(strings.Join(valueArray, "\""))
 }
 
-func (s *signer) canonicalizeQuery(r escher.Request) string {
-	u, err := url.Parse(r.Url)
-	if err != nil {
-		return ""
+func canonicalizeQuery(query requestQuery) string {
+	var q []string
+	for _, kv := range query {
+		q = append(q, strings.Replace(url.QueryEscape(kv[0]), "+", "%20", -1)+"="+url.QueryEscape(kv[1]))
 	}
-
-	isSignatureInQuery := s.config.IsSignatureInQuery(r)
-	signatureQueryKey := s.config.SignatureQueryKey()
-
-	queryValues := make(url.Values)
-	for key, values := range u.Query() {
-		if isSignatureInQuery && key == signatureQueryKey {
-			continue
-		}
-		queryValues[key] = values
-	}
-
-	return queryValues.Encode()
+	sort.Strings(q)
+	return strings.Join(q, "&")
 }
 
 func createAlgoFunc(hashAlgo string) func() hash.Hash {
@@ -76,7 +66,7 @@ func parsePathQuery(pathAndQuery string) parsedPathQuery {
 }
 
 func (s *signer) GetStringToSign(request escher.Request, headersToSign []string) string {
-	return s.config.GetAlgoPrefix() + "-HMAC-" + s.config.GetHashAlgo() + "\n" +
+	return s.config.AlgoPrefix + "-HMAC-" + s.config.HashAlgo + "\n" +
 		s.config.Date + "\n" +
 		s.config.ShortDate() + "/" + s.config.CredentialScope + "\n" +
 		s.computeDigest(s.CanonicalizeRequest(request, headersToSign))
