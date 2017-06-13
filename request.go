@@ -1,6 +1,9 @@
 package escher
 
-import "net/url"
+import (
+	"fmt"
+	"net/url"
+)
 
 type Request struct {
 	Method  string         `json:"method"`
@@ -39,12 +42,19 @@ func (r Request) QueryParts() (QueryParts, error) {
 	return queryParts, nil
 }
 
-func (qp QueryParts) Without(key string) QueryParts {
-	nqp := make(QueryParts, 0, len(qp))
-	for _, kv := range qp {
-		if kv[0] != key {
-			nqp = append(nqp, kv)
-		}
+func (r *Request) DelQueryValueByKey(key string) error {
+	uri, err := url.Parse(r.Url)
+
+	if err != nil {
+		return err
 	}
-	return nqp
+
+	values := uri.Query()
+	values.Del(key)
+	uri.RawQuery = values.Encode()
+
+	r.Url = uri.String()
+	fmt.Println(r.Url)
+
+	return nil
 }

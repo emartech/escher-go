@@ -2,6 +2,7 @@ package validator
 
 import (
 	"errors"
+	"fmt"
 	"net/url"
 	"regexp"
 	"strings"
@@ -13,15 +14,14 @@ import (
 	"github.com/adamluzsi/escher-go/utils"
 )
 
-var (
-	MissingDateParam = errors.New("missing date param")
-)
-
 func (v *validator) Validate(request escher.Request, keyDB keydb.KeyDB, mandatoryHeaders []string) (string, error) {
 
-	method := request.Method
-	body := request.Body
-	headers := request.Headers
+	requestForSigning := &escher.Request{
+		Method:  request.Method,
+		Url:     request.Url,
+		Headers: request.Headers,
+		Body:    request.Body,
+	}
 
 	var rawDate string
 	var expires uint64
@@ -29,6 +29,7 @@ func (v *validator) Validate(request escher.Request, keyDB keydb.KeyDB, mandator
 	var signedHeaders []string
 
 	queryParts, err := request.QueryParts()
+
 	if err != nil {
 		return "", err
 	}
@@ -48,8 +49,8 @@ func (v *validator) Validate(request escher.Request, keyDB keydb.KeyDB, mandator
 		}
 	}
 
-	if method == "GET" && signatureInQuery {
-		body = "UNSIGNED-PAYLOAD"
+	if signatureInQuery {
+		requestForSigning.Body = "UNSIGNED-PAYLOAD"
 
 		rawDate, err = v.getSigningParam("Date", queryParts)
 
@@ -58,26 +59,32 @@ func (v *validator) Validate(request escher.Request, keyDB keydb.KeyDB, mandator
 		}
 
 		algorithm, apiKeyID, shortDate, credentialScope, signedHeaders, signature, expires, err = v.getAuthPartsFromQuery(queryParts)
+
 		if err != nil {
 			return "", err
 		}
 
-		queryParts = queryParts.Without(v.queryKeyFor("Signature"))
+		fmt.Println("---------------")
+		fmt.Println(requestForSigning)
+		requestForSigning.DelQueryValueByKey(v.queryKeyFor("Signature"))
+		fmt.Println(requestForSigning)
 	} else {
 
 		var ok bool
-		rawDate, ok = headers.Get(v.config.GetDateHeaderName())
+		rawDate, ok = request.Headers.Get(v.config.GetDateHeaderName())
 
 		if !ok {
 			return "", errors.New("The " + v.config.GetDateHeaderName() + " header is missing")
 		}
 
-		authHeader, ok := headers.Get(v.config.GetAuthHeaderName())
+		authHeader, ok := request.Headers.Get(v.config.GetAuthHeaderName())
+
 		if !ok {
 			return "", errors.New("The " + v.config.GetAuthHeaderName() + " header is missing")
 		}
 
 		algorithm, apiKeyID, shortDate, credentialScope, signedHeaders, signature, expires, err = v.getAuthPartsFromHeader(authHeader)
+
 		if err != nil {
 			return "", err
 		}
@@ -92,22 +99,21 @@ func (v *validator) Validate(request escher.Request, keyDB keydb.KeyDB, mandator
 	apiSecret, err := keyDB.GetSecret(apiKeyID)
 
 	if err != nil {
-		return "", errors.New("Invalid API key")
+		return "", InvalidAPIKey
 	}
 
 	if algorithm != "SHA256" && algorithm != "SHA512" {
-		return "", errors.New("Only SHA256 and SHA512 hash algorithms are allowed")
+		return "", AlgorithmNotAllowed
 	}
 
-	if !isValidRequestMethod(method) {
-		return "", errors.New("The request method is invalid")
+	if !isValidRequestMethod(request.Method) {
+		return "", RequestMethodIsInvalid
 	}
 
-	if strings.ToUpper(method) == "POST" && body == "" {
-		return "", errors.New("The request body shouldn't be empty if the request method is POST")
+	if strings.ToUpper(request.Method) == "POST" && request.Body == "" {
+		return "", POSTRequestBodyIsEmpty
 	}
 
-	// raise EscherError, "The request url shouldn't contains http or https" if path.match /^https?:\/\//
 	_, err = request.Path()
 
 	if err != nil {
@@ -115,23 +121,23 @@ func (v *validator) Validate(request escher.Request, keyDB keydb.KeyDB, mandator
 	}
 
 	if date.Format("20060102") != shortDate {
-		return "", errors.New("The credential date does not match with the request date")
+		return "", CredentialDateNotMatching
 	}
 
 	if !v.isDateWithinRange(date, expires) {
-		return "", errors.New("The request date is not within the accepted time range")
+		return "", RequestDateNotAcceptable
 	}
 
 	if v.config.ShortDate() != shortDate {
-		return "", errors.New("Invalid date in authorization header, it should equal with date header")
+		return "", AuthorizationDateIsInvalid
 	}
 
 	if v.config.CredentialScope != credentialScope {
-		return "", errors.New("The credential scope is invalid")
+		return "", InvalidCredentialScope
 	}
 
 	if !isSignedHeadersInlcude(signedHeaders, "host") {
-		return "", errors.New("The host header is not signed")
+		return "", HostHeaderNotSigned
 	}
 
 	if mandatoryHeaders != nil {
@@ -143,19 +149,19 @@ func (v *validator) Validate(request escher.Request, keyDB keydb.KeyDB, mandator
 	}
 
 	if signatureInQuery && !isSignedHeadersOnlyInclude(signedHeaders, "host") {
-		return "", errors.New("Only the host header should be signed")
+		return "", HostHeaderNotSigned
 	}
 
 	if !signatureInQuery && !isSignedHeadersInlcude(signedHeaders, v.config.GetDateHeaderName()) {
-		return "", errors.New("The date header is not signed")
+		return "", DateHeaderIsNotSigned
 	}
 
 	s := signer.New(v.config.Reconfig(date.Format(utils.EscherDateFormat), algorithm, credentialScope, apiKeyID, apiSecret))
 
-	expectedSignature := s.GenerateSignature(request, signedHeaders)
+	expectedSignature := s.GenerateSignature(*requestForSigning, signedHeaders)
 
 	if expectedSignature != signature {
-		return "", errors.New("The signatures do not match")
+		return "", SignatureDoesNotMatch
 	}
 
 	return apiKeyID, nil
@@ -173,7 +179,7 @@ func rgxNamedMatch(rgx *regexp.Regexp, text string) (map[string]string, error) {
 	subexpNames := rgx.SubexpNames()
 
 	if len(match) != len(subexpNames) {
-		return nil, errors.New("Could not parse auth header")
+		return nil, MalformedAuthHeader
 	}
 
 	result := make(map[string]string)
@@ -189,8 +195,6 @@ func rgxNamedMatch(rgx *regexp.Regexp, text string) (map[string]string, error) {
 func (v *validator) queryKeyFor(key string) string {
 	return "X-" + v.config.GetVendorKey() + "-" + key
 }
-
-var SigningParamNotFound = errors.New("Signing Param not found")
 
 func (v *validator) getSigningParam(key string, queryParts escher.QueryParts) (string, error) {
 	queryKey := v.queryKeyFor(key)

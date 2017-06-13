@@ -1,6 +1,9 @@
 package signer
 
 import (
+	"fmt"
+	"strings"
+
 	escher "github.com/adamluzsi/escher-go"
 )
 
@@ -15,12 +18,18 @@ func (s *signer) SignRequest(request escher.Request, headersToSign []string) esc
 
 func (s *signer) CanonicalizeRequest(request escher.Request, headersToSign []string) string {
 	var url = parsePathQuery(request.Url)
-	var canonicalizedRequest = request.Method + "\n" +
-		canonicalizePath(url.Path) + "\n" +
-		canonicalizeQuery(url.Query) + "\n" +
-		s.canonicalizeHeaders(request, headersToSign) + "\n" +
-		s.canonicalizeHeadersToSign(request, headersToSign) + "\n" +
-		s.computeDigest(request.Body)
+	parts := make([]string, 0, 6)
+	parts = append(parts, request.Method)
+	parts = append(parts, canonicalizePath(url.Path))
+	parts = append(parts, canonicalizeQuery(url.Query))
+	parts = append(parts, s.canonicalizeHeaders(request, headersToSign))
+	parts = append(parts, s.canonicalizeHeadersToSign(request, headersToSign))
+	parts = append(parts, s.computeDigest(request.Body))
+	canonicalizedRequest := strings.Join(parts, "\n")
+
+	fmt.Println(request.Url)
+	fmt.Println(canonicalizedRequest)
+
 	return canonicalizedRequest
 }
 

@@ -3,6 +3,7 @@ package signer
 import (
 	"crypto/hmac"
 	"encoding/hex"
+	"fmt"
 	"sort"
 	"strings"
 	"time"
@@ -21,6 +22,12 @@ func (s *signer) getDefaultHeaders(request escher.Request) escher.RequestHeaders
 		}
 		newHeaders = append(newHeaders, [2]string{s.config.DateHeaderName, dateHeader})
 	}
+
+	fmt.Println(newHeaders)
+	fmt.Println(newHeaders)
+	fmt.Println(newHeaders)
+	fmt.Println(newHeaders)
+	fmt.Println(newHeaders)
 	return newHeaders
 }
 
