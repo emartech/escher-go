@@ -24,4 +24,4 @@ _testmain.go
 *.prof
 .ruby-version
 
-/testcases
+.tests
