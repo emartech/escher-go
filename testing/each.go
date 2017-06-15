@@ -16,6 +16,7 @@ func EachTestConfigFor(t testing.TB, topic string, tester func(escher.Config, Te
 		if t.Failed() {
 			t.Log("-----------------------------------------------")
 			t.Log(testConfig.getTitle())
+			t.Log(testConfig.FilePath)
 			if testConfig.Description != "" {
 				t.Log(testConfig.Description)
 			}

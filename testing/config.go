@@ -19,6 +19,7 @@ type TestConfig struct {
 	Config        escher.Config      `json:"config"`
 	Expected      TestConfigExpected `json:"expected"`
 	RawKeyDB      [][2]string        `json:"keyDb"`
+	FilePath      string
 }
 
 func (testConfig TestConfig) KeyDB() keydb.KeyDB {
@@ -57,6 +58,7 @@ func testConfigBy(t testing.TB, filePath string) TestConfig {
 
 	var testConfig TestConfig
 	json.Unmarshal(content, &testConfig)
+	testConfig.FilePath = filePath
 
 	return testConfig
 }
