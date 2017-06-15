@@ -12,7 +12,7 @@ func getTestConfigsForTopic(t testing.TB, topic string) []TestConfig {
 	configs := make([]TestConfig, 0)
 
 	for _, dirPath := range getTestCaseDirectories(t) {
-		for _, filePath := range testFilesFor(t, dirPath) {
+		for _, filePath := range testFilesFor(t, dirPath, topic) {
 			configs = append(configs, testConfigBy(t, filePath))
 		}
 	}
@@ -64,7 +64,7 @@ func getTestCaseDirectories(t testing.TB) []string {
 	return dirs
 }
 
-func testFilesFor(t testing.TB, dirname string) []string {
+func testFilesFor(t testing.TB, dirname, suffix string) []string {
 	files, err := ioutil.ReadDir(dirname)
 
 	if err != nil {
@@ -75,18 +75,20 @@ func testFilesFor(t testing.TB, dirname string) []string {
 
 	for _, file := range files {
 
-		filePath := filepath.Join(dirname, file.Name())
-
 		if file.IsDir() {
 			continue
 		}
 
-		if !strings.HasSuffix(filePath, ".json") {
+		if !strings.HasSuffix(file.Name(), ".json") {
 			continue
 		}
 
+		if !strings.HasSuffix(file.Name(), suffix) {
+
+		}
+
 		if !file.IsDir() {
-			testFiles = append(testFiles, filePath)
+			testFiles = append(testFiles, filepath.Join(dirname, file.Name()))
 		}
 
 	}
