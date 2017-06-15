@@ -1,7 +1,6 @@
 package signer
 
 import (
-	"fmt"
 	"strings"
 
 	escher "github.com/adamluzsi/escher-go"
@@ -26,10 +25,6 @@ func (s *signer) CanonicalizeRequest(request escher.Request, headersToSign []str
 	parts = append(parts, s.canonicalizeHeadersToSign(request, headersToSign))
 	parts = append(parts, s.computeDigest(request.Body))
 	canonicalizedRequest := strings.Join(parts, "\n")
-
-	fmt.Println(request.Url)
-	fmt.Println(canonicalizedRequest)
-
 	return canonicalizedRequest
 }
 

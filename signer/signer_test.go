@@ -17,7 +17,7 @@ func TestCanonicalizeRequest(t *testing.T) {
 		}
 
 		canonicalizedRequest := signer.New(config).CanonicalizeRequest(testConfig.Request, testConfig.HeadersToSign)
-		return assert.Equal(t, canonicalizedRequest, testConfig.Expected.CanonicalizedRequest, "canonicalizedRequest should be eq")
+		return assert.Equal(t, testConfig.Expected.CanonicalizedRequest, canonicalizedRequest, "canonicalizedRequest should be eq")
 	})
 }
 
@@ -56,3 +56,15 @@ func TestSignRequest(t *testing.T) {
 		return assert.Equal(t, testConfig.Expected.Request, request, "Requests should be eq")
 	})
 }
+
+// func TestPresignUrl(t *testing.T) {
+// 	t.Log("SignRequest should return with a properly signed request")
+// 	EachTestConfigFor(t, "presignurl", func(config escher.Config, testConfig TestConfig) bool {
+// 		if testConfig.Expected.Request.Method == "" {
+// 			return false
+// 		}
+
+// 		request := signer.New(config).SignRequest(testConfig.Request, testConfig.HeadersToSign)
+// 		return assert.Equal(t, testConfig.Expected.Request, request, "Requests should be eq")
+// 	})
+// }

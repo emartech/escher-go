@@ -3,7 +3,6 @@ package signer
 import (
 	"crypto/hmac"
 	"encoding/hex"
-	"fmt"
 	"sort"
 	"strings"
 	"time"
@@ -22,12 +21,6 @@ func (s *signer) getDefaultHeaders(request escher.Request) escher.RequestHeaders
 		}
 		newHeaders = append(newHeaders, [2]string{s.config.DateHeaderName, dateHeader})
 	}
-
-	fmt.Println(newHeaders)
-	fmt.Println(newHeaders)
-	fmt.Println(newHeaders)
-	fmt.Println(newHeaders)
-	fmt.Println(newHeaders)
 	return newHeaders
 }
 
@@ -45,6 +38,7 @@ func (s *signer) keepHeadersToSign(headers escher.RequestHeaders, headersToSign 
 }
 
 func (s *signer) addDefaultsToHeadersToSign(request escher.Request, headersToSign []string) []string {
+
 	if !sliceContainsCaseInsensitive("host", headersToSign) {
 		headersToSign = append(headersToSign, "host")
 	}
@@ -52,7 +46,9 @@ func (s *signer) addDefaultsToHeadersToSign(request escher.Request, headersToSig
 	if !s.config.IsSignatureInQuery(request) && !sliceContainsCaseInsensitive(s.config.DateHeaderName, headersToSign) {
 		headersToSign = append(headersToSign, s.config.DateHeaderName)
 	}
+
 	return headersToSign
+
 }
 
 func (s *signer) calculateSignature(stringToSign string, signingKey []byte) string {
@@ -90,8 +86,6 @@ func (s *signer) canonicalizeHeaders(request escher.Request, headersToSign []str
 	}
 
 	for _, header := range s.getDefaultHeaders(request) {
-		r := 1 / (len(headers) - 2)
-		r++
 		headersArray = append(headersArray, strings.ToLower(header[0])+":"+header[1]+"\n")
 	}
 
@@ -99,14 +93,16 @@ func (s *signer) canonicalizeHeaders(request escher.Request, headersToSign []str
 	return strings.Join(headersArray, "")
 }
 
-func (s *signer) canonicalizeHeadersToSign(request escher.Request, headers []string) string {
-	headers = s.addDefaultsToHeadersToSign(request, headers)
-	var h []string
+func (s *signer) canonicalizeHeadersToSign(request escher.Request, headersToSign []string) string {
+	headers := s.addDefaultsToHeadersToSign(request, headersToSign)
+
+	var loweredHeaders []string
 	for _, header := range headers {
-		h = append(h, strings.ToLower(header))
+		loweredHeaders = append(loweredHeaders, strings.ToLower(header))
 	}
-	sort.Strings(h)
-	return strings.Join(h, ";")
+	sort.Strings(loweredHeaders)
+
+	return strings.Join(loweredHeaders, ";")
 }
 
 func (s *signer) computeDigest(message string) string {
