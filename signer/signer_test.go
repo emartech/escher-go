@@ -1,6 +1,7 @@
 package signer_test
 
 import (
+	"fmt"
 	"testing"
 
 	escher "github.com/adamluzsi/escher-go"
@@ -57,14 +58,18 @@ func TestSignRequest(t *testing.T) {
 	})
 }
 
-// func TestPresignUrl(t *testing.T) {
-// 	t.Log("SignRequest should return with a properly signed request")
-// 	EachTestConfigFor(t, "presignurl", func(config escher.Config, testConfig TestConfig) bool {
-// 		if testConfig.Expected.Request.Method == "" {
-// 			return false
-// 		}
+func TestSignedURLBy(t *testing.T) {
+	t.Log("SignRequest should return with a properly signed request")
+	EachTestConfigFor(t, "presignurl", func(config escher.Config, testConfig TestConfig) bool {
+		fmt.Println(testConfig.Request.Expires)
 
-// 		request := signer.New(config).SignRequest(testConfig.Request, testConfig.HeadersToSign)
-// 		return assert.Equal(t, testConfig.Expected.Request, request, "Requests should be eq")
-// 	})
-// }
+		signedURLStr, err := signer.New(config).SignedURLBy(testConfig.Request.Method, testConfig.Request.Url, testConfig.Request.Expires)
+
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		fmt.Println(testConfig.Expected.URL, signedURLStr)
+		return assert.Equal(t, testConfig.Expected.URL, signedURLStr)
+	})
+}

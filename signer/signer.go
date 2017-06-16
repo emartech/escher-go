@@ -8,6 +8,7 @@ type Signer interface {
 	GenerateHeader(escher.Request, []string) string
 	SignRequest(escher.Request, []string) escher.Request
 	GenerateSignature(escher.Request, []string) string
+	SignedURLBy(httpMethod, urlToSign string, expires int) (string, error)
 }
 
 type signer struct {

@@ -10,6 +10,7 @@ type Request struct {
 	Url     string         `json:"url"`
 	Headers RequestHeaders `json:"headers"`
 	Body    string         `json:"body"`
+	Expires int            `json:"expires"`
 }
 
 func (r Request) Path() (string, error) {

@@ -1,5 +1,9 @@
 package escher
 
+import (
+	"github.com/adamluzsi/escher-go/utils"
+)
+
 type Config struct {
 	Date            string
 	HashAlgo        string
@@ -28,6 +32,18 @@ func (c Config) Reconfig(date, hashAlgo, credentialScope, apiKeyID, apiSecret st
 		DateHeaderName:  c.DateHeaderName,
 		Date:            date,
 	}
+}
+
+func (c Config) ComposedAlgorithm() string {
+	return c.GetAlgoPrefix() + "-HMAC-" + c.GetHashAlgo()
+}
+
+func (c Config) FormattedDate() (string, error) {
+	t, err := utils.ParseTime(c.Date)
+	if err != nil {
+		return "", err
+	}
+	return t.Format(utils.EscherDateFormat), nil
 }
 
 func (c Config) GetHashAlgo() string {

@@ -2,7 +2,6 @@ package validator
 
 import (
 	"errors"
-	"fmt"
 	"net/url"
 	"regexp"
 	"strings"
@@ -64,10 +63,7 @@ func (v *validator) Validate(request escher.Request, keyDB keydb.KeyDB, mandator
 			return "", err
 		}
 
-		fmt.Println("---------------")
-		fmt.Println(requestForSigning)
-		requestForSigning.DelQueryValueByKey(v.queryKeyFor("Signature"))
-		fmt.Println(requestForSigning)
+		requestForSigning.DelQueryValueByKey(v.config.QueryKeyFor("Signature"))
 	} else {
 
 		var ok bool
@@ -192,12 +188,8 @@ func rgxNamedMatch(rgx *regexp.Regexp, text string) (map[string]string, error) {
 	return result, nil
 }
 
-func (v *validator) queryKeyFor(key string) string {
-	return "X-" + v.config.GetVendorKey() + "-" + key
-}
-
 func (v *validator) getSigningParam(key string, queryParts escher.QueryParts) (string, error) {
-	queryKey := v.queryKeyFor(key)
+	queryKey := v.config.QueryKeyFor(key)
 	for _, part := range queryParts {
 		if part[0] == queryKey {
 			return url.QueryUnescape(part[1])

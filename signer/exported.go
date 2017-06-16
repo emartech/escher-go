@@ -28,6 +28,7 @@ func (s *signer) CanonicalizeRequest(request escher.Request, headersToSign []str
 	return canonicalizedRequest
 }
 
+// TODO: ComposedAlgorithm
 func (s *signer) GenerateHeader(request escher.Request, headersToSign []string) string {
 	return s.config.AlgoPrefix + "-HMAC-" + s.config.HashAlgo + " " +
 		"Credential=" + s.generateCredentials() + ", " +

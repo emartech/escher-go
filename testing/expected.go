@@ -9,4 +9,5 @@ type TestConfigExpected struct {
 	AuthHeader           string         `json:"authHeader"`
 	APIKeyID             string         `json:"apiKey"`
 	Error                string         `json:"error"`
+	URL                  string         `json:"url"`
 }
