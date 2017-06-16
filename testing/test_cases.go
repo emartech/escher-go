@@ -63,35 +63,3 @@ func getTestCaseDirectories(t testing.TB) []string {
 
 	return dirs
 }
-
-func testFilesFor(t testing.TB, dirname, suffix string) []string {
-	files, err := ioutil.ReadDir(dirname)
-
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	testFiles := make([]string, 0)
-
-	for _, file := range files {
-
-		if file.IsDir() {
-			continue
-		}
-
-		if !strings.HasSuffix(file.Name(), ".json") {
-			continue
-		}
-
-		if !strings.HasSuffix(file.Name(), suffix) {
-
-		}
-
-		if !file.IsDir() {
-			testFiles = append(testFiles, filepath.Join(dirname, file.Name()))
-		}
-
-	}
-
-	return testFiles
-}
