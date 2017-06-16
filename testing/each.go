@@ -13,7 +13,7 @@ func EachTestConfigFor(t testing.TB, topic string, tester func(escher.Config, Te
 
 		testedCases[tester(fixedConfigBy(t, testConfig.Config), testConfig)] = struct{}{}
 
-		if t.Failed() {
+		if t.Failed() || testing.Verbose() {
 			t.Log("-----------------------------------------------")
 			t.Log(testConfig.getTitle())
 			t.Log(testConfig.FilePath)
