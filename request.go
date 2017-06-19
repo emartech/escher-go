@@ -1,7 +1,6 @@
 package escher
 
 import (
-	"fmt"
 	"net/url"
 )
 
@@ -55,7 +54,6 @@ func (r *Request) DelQueryValueByKey(key string) error {
 	uri.RawQuery = values.Encode()
 
 	r.Url = uri.String()
-	fmt.Println(r.Url)
 
 	return nil
 }

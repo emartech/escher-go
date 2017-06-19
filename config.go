@@ -1,6 +1,9 @@
 package escher
 
 import (
+	"net/url"
+	"time"
+
 	"github.com/EscherAuth/escher/utils"
 )
 
@@ -38,12 +41,20 @@ func (c Config) ComposedAlgorithm() string {
 	return c.GetAlgoPrefix() + "-HMAC-" + c.GetHashAlgo()
 }
 
-func (c Config) FormattedDate() (string, error) {
+func (c Config) GetDate() (string, error) {
+
+	if c.Date == "" {
+		return time.Now().Format(utils.EscherDateFormat), nil
+	}
+
 	t, err := utils.ParseTime(c.Date)
+
 	if err != nil {
 		return "", err
 	}
+
 	return t.Format(utils.EscherDateFormat), nil
+
 }
 
 func (c Config) GetHashAlgo() string {
@@ -86,22 +97,31 @@ func (c Config) GetDateHeaderName() string {
 	return "X-Escher-Date"
 }
 
-func (c Config) IsSignatureInQuery(r Request) bool {
-	queryKey := c.QueryKeyFor("Signature")
+func (c Config) IsSigningInQuery(r Request) bool {
 
-	queryParts, err := r.QueryParts()
+	uri, err := url.Parse(r.Url)
 
 	if err != nil {
 		return false
 	}
 
-	for _, part := range queryParts {
-		if part[0] == queryKey {
-			return true
+	requiredKeys := []string{
+		c.QueryKeyFor("Algorithm"),
+		c.QueryKeyFor("Credentials"),
+		c.QueryKeyFor("Date"),
+		c.QueryKeyFor("Expires"),
+		c.QueryKeyFor("SignedHeaders"),
+	}
+	// queryKey := c.QueryKeyFor("Signature")
+
+	values := uri.Query()
+	for _, requiredKey := range requiredKeys {
+		if _, ok := values[requiredKey]; !ok {
+			return false
 		}
 	}
 
-	return false
+	return true
 }
 
 func (c Config) SignatureQueryKey() string {

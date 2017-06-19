@@ -43,7 +43,7 @@ func (s *signer) addDefaultsToHeadersToSign(request escher.Request, headersToSig
 		headersToSign = append(headersToSign, "host")
 	}
 
-	if !s.config.IsSignatureInQuery(request) && !sliceContainsCaseInsensitive(s.config.DateHeaderName, headersToSign) {
+	if !s.config.IsSigningInQuery(request) && !sliceContainsCaseInsensitive(s.config.DateHeaderName, headersToSign) {
 		headersToSign = append(headersToSign, s.config.DateHeaderName)
 	}
 

@@ -1,10 +1,9 @@
 package signer_test
 
 import (
-	"fmt"
 	"testing"
 
-	escher "github.com/EscherAuth/escher"
+	"github.com/EscherAuth/escher"
 	"github.com/EscherAuth/escher/signer"
 	. "github.com/EscherAuth/escher/testing"
 	"github.com/stretchr/testify/assert"
@@ -57,19 +56,16 @@ func TestSignRequest(t *testing.T) {
 		return assert.Equal(t, testConfig.Expected.Request, request, "Requests should be eq")
 	})
 }
-
+ 
 func TestSignedURLBy(t *testing.T) {
 	t.Log("SignRequest should return with a properly signed request")
 	EachTestConfigFor(t, "presignurl", func(config escher.Config, testConfig TestConfig) bool {
-		fmt.Println(testConfig.Request.Expires)
-
 		signedURLStr, err := signer.New(config).SignedURLBy(testConfig.Request.Method, testConfig.Request.Url, testConfig.Request.Expires)
 
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		fmt.Println(testConfig.Expected.URL, signedURLStr)
 		return assert.Equal(t, testConfig.Expected.URL, signedURLStr)
 	})
 }

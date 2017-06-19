@@ -35,7 +35,7 @@ func (v *validator) Validate(request escher.Request, keyDB keydb.KeyDB, mandator
 
 	expectedHeaders := []string{"Host"}
 
-	signatureInQuery := v.config.IsSignatureInQuery(request)
+	signatureInQuery := v.config.IsSigningInQuery(request)
 
 	if !signatureInQuery {
 		expectedHeaders = append(expectedHeaders, v.config.GetAuthHeaderName(), v.config.GetDateHeaderName())
