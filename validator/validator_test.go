@@ -3,10 +3,10 @@ package validator_test
 import (
 	"testing"
 
-	escher "github.com/adamluzsi/escher-go"
-	"github.com/adamluzsi/escher-go/signer"
-	. "github.com/adamluzsi/escher-go/testing"
-	"github.com/adamluzsi/escher-go/validator"
+	escher "github.com/EscherAuth/escher"
+	"github.com/EscherAuth/escher/signer"
+	. "github.com/EscherAuth/escher/testing"
+	"github.com/EscherAuth/escher/validator"
 	"github.com/stretchr/testify/assert"
 )
 

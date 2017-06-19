@@ -8,8 +8,8 @@ import (
 	"os"
 	"os/signal"
 
-	"github.com/adamluzsi/escher-go/cmd/escher/proxy"
-	"github.com/adamluzsi/escher-go/cmd/escher/runner"
+	"github.com/EscherAuth/escher/cmd/escher/proxy"
+	"github.com/EscherAuth/escher/cmd/escher/runner"
 )
 
 var port string

@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	escher "github.com/adamluzsi/escher-go"
+	escher "github.com/EscherAuth/escher"
 )
 
 func (v *validator) getAuthPartsFromHeader(authHeader string) (algorithm, apiKeyID, shortDate, credentialScope string, signedHeaders []string, signature string, expires uint64, err error) {

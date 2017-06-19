@@ -1,7 +1,7 @@
 package escher
 
 import (
-	"github.com/adamluzsi/escher-go/utils"
+	"github.com/EscherAuth/escher/utils"
 )
 
 type Config struct {

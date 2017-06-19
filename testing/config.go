@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	escher "github.com/adamluzsi/escher-go"
-	"github.com/adamluzsi/escher-go/keydb"
+	escher "github.com/EscherAuth/escher"
+	"github.com/EscherAuth/escher/keydb"
 )
 
 type TestConfig struct {

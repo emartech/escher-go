@@ -7,10 +7,10 @@ import (
 	"strings"
 	"time"
 
-	escher "github.com/adamluzsi/escher-go"
-	"github.com/adamluzsi/escher-go/keydb"
-	"github.com/adamluzsi/escher-go/signer"
-	"github.com/adamluzsi/escher-go/utils"
+	escher "github.com/EscherAuth/escher"
+	"github.com/EscherAuth/escher/keydb"
+	"github.com/EscherAuth/escher/signer"
+	"github.com/EscherAuth/escher/utils"
 )
 
 func (v *validator) Validate(request escher.Request, keyDB keydb.KeyDB, mandatoryHeaders []string) (string, error) {

@@ -1,6 +1,6 @@
 package testing
 
-import escher "github.com/adamluzsi/escher-go"
+import escher "github.com/EscherAuth/escher"
 
 type TestConfigExpected struct {
 	Request              escher.Request `json:"request"`

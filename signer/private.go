@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	escher "github.com/adamluzsi/escher-go"
+	escher "github.com/EscherAuth/escher"
 )
 
 func (s *signer) getDefaultHeaders(request escher.Request) escher.RequestHeaders {

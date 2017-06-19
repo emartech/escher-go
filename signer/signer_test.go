@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"testing"
 
-	escher "github.com/adamluzsi/escher-go"
-	"github.com/adamluzsi/escher-go/signer"
-	. "github.com/adamluzsi/escher-go/testing"
+	escher "github.com/EscherAuth/escher"
+	"github.com/EscherAuth/escher/signer"
+	. "github.com/EscherAuth/escher/testing"
 	"github.com/stretchr/testify/assert"
 )
 

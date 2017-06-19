@@ -5,7 +5,7 @@ import (
 	"crypto/sha512"
 
 	"github.com/PuerkitoBio/purell"
-	escher "github.com/adamluzsi/escher-go"
+	escher "github.com/EscherAuth/escher"
 
 	"hash"
 	"net/url"

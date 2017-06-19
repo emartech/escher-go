@@ -3,7 +3,7 @@ package testing
 import (
 	"testing"
 
-	escher "github.com/adamluzsi/escher-go"
+	escher "github.com/EscherAuth/escher"
 )
 
 func EachTestConfigFor(t testing.TB, topic string, tester func(escher.Config, TestConfig) bool) {

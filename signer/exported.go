@@ -3,7 +3,7 @@ package signer
 import (
 	"strings"
 
-	escher "github.com/adamluzsi/escher-go"
+	escher "github.com/EscherAuth/escher"
 )
 
 func (s *signer) SignRequest(request escher.Request, headersToSign []string) escher.Request {

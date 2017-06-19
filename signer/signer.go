@@ -1,6 +1,6 @@
 package signer
 
-import escher "github.com/adamluzsi/escher-go"
+import escher "github.com/EscherAuth/escher"
 
 type Signer interface {
 	CanonicalizeRequest(escher.Request, []string) string

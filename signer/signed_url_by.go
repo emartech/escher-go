@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	escher "github.com/adamluzsi/escher-go"
+	escher "github.com/EscherAuth/escher"
 )
 
 const defaultExpirationTime = 86400 * time.Second
