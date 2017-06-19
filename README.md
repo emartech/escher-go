@@ -1,4 +1,4 @@
-EscherGo - HTTP request signing lib [![Build Status](https://travis-ci.org/emartech/escher-go.svg?branch=master)](https://travis-ci.org/emartech/escher-go)
+[![Build Status](https://travis-ci.org/EscherAuth/escher.svg?branch=master)](https://travis-ci.org/EscherAuth/escher) Escher - HTTP request signing lib
 ===================================
 
 Go implementation of the [AWS4](http://docs.aws.amazon.com/general/latest/gr/sigv4_signing.html) compatible [Escher](https://github.com/emartech/escher) HTTP request signing and authentication library.
@@ -6,12 +6,20 @@ Go implementation of the [AWS4](http://docs.aws.amazon.com/general/latest/gr/sig
 Prerequisite
 ------------
 
-In order to run the tests, some Go libraries should be installed. See `.travis.yml` for tips.
+this will download the test cases for the escher implementation, and set in the env the required env key(s)
+
+    $ source env.sh
 
 Run the tests
 -------------
 
-To run all the tests, use the `go test -cover` command.
+in 1.9:
+
+    $ go test ./...
+
+in older go versions:
+
+    $ go test $(go list ./... | grep -v /vendor/)
 
 About Escher
 ------------
