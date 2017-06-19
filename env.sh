@@ -5,7 +5,7 @@ testCasesDirectoryName=".tests"
 testCaseDirectoryPath="$testCaseRepoCloneDirector/$testCasesDirectoryName"
 
 if [ ! -d "$testCaseDirectoryPath" ];then
-    git clone https://github.com/adamluzsi/escher-test-suite $testCasesDirectoryName
+    git clone "https://github.com/EscherAuth/test-cases" $testCasesDirectoryName
 fi
 
 cd $testCasesDirectoryName
