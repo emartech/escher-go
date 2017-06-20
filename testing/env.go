@@ -5,8 +5,8 @@ import (
 	"strings"
 )
 
-func isFailFastEnabled() bool {
-	ff := os.Getenv("FAIL_FAST")
+func isFastFailEnabled() bool {
+	ff := os.Getenv("FAST_FAIL")
 
 	return strings.ToLower(ff) == "true"
 }

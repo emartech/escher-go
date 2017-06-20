@@ -22,7 +22,7 @@ func EachTestConfigFor(t testing.TB, topic string, tester func(escher.Config, Te
 			}
 			t.Log("-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --")
 
-			if isFailFastEnabled() {
+			if isFastFailEnabled() {
 				t.FailNow()
 			}
 		}
