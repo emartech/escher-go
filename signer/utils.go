@@ -4,8 +4,8 @@ import (
 	"crypto/sha256"
 	"crypto/sha512"
 
-	"github.com/PuerkitoBio/purell"
 	escher "github.com/EscherAuth/escher"
+	"github.com/PuerkitoBio/purell"
 
 	"hash"
 	"net/url"
@@ -13,13 +13,6 @@ import (
 	"sort"
 	"strings"
 )
-
-type parsedPathQuery struct {
-	Path  string
-	Query requestQuery
-}
-
-type requestQuery [][2]string
 
 func normalizeHeaderValue(value string) string {
 	var valueArray []string
@@ -62,6 +55,12 @@ func parsePathQuery(pathAndQuery string) parsedPathQuery {
 	if len(s) > 1 {
 		p.Query = parseQuery(s[1])
 	}
+
+	u, err := url.Parse(pathAndQuery)
+	if err == nil && u.Scheme != "" {
+		p.Path = u.Path
+	}
+
 	return p
 }
 
@@ -80,20 +79,6 @@ func sliceContainsCaseInsensitive(needle string, stack []string) bool {
 		}
 	}
 	return false
-}
-
-func parseQuery(query string) requestQuery {
-	var q requestQuery
-	for _, param := range strings.Split(query, "&") {
-		var kv = strings.SplitN(param, "=", 2)
-		var kv2 [2]string
-		kv2[0] = queryUnescape(kv[0])
-		if len(kv) > 1 {
-			kv2[1] = queryUnescape(kv[1])
-		}
-		q = append(q, kv2)
-	}
-	return q
 }
 
 func queryUnescape(s string) string {
@@ -144,4 +129,26 @@ func hasHeader(headerName string, headers escher.RequestHeaders) bool {
 		}
 	}
 	return false
+}
+
+// ToDo: remove this later
+type parsedPathQuery struct {
+	Path  string
+	Query requestQuery
+}
+
+type requestQuery [][2]string
+
+func parseQuery(query string) requestQuery {
+	var q requestQuery
+	for _, param := range strings.Split(query, "&") {
+		var kv = strings.SplitN(param, "=", 2)
+		var kv2 [2]string
+		kv2[0] = queryUnescape(kv[0])
+		if len(kv) > 1 {
+			kv2[1] = queryUnescape(kv[1])
+		}
+		q = append(q, kv2)
+	}
+	return q
 }

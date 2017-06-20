@@ -1,7 +1,6 @@
 package signer
 
 import (
-	"fmt"
 	"net/url"
 	"strconv"
 	"strings"
@@ -39,14 +38,14 @@ func (s *signer) SignRequest(request escher.Request, headersToSign []string) esc
 }
 
 func (s *signer) CanonicalizeRequest(request escher.Request, headersToSign []string) string {
-	var url = parsePathQuery(request.Url)
+	// TODO: remove this shit
+	var u = parsePathQuery(request.Url)
 	parts := make([]string, 0, 6)
 	parts = append(parts, request.Method)
-	parts = append(parts, canonicalizePath(url.Path))
-	parts = append(parts, canonicalizeQuery(url.Query))
+	parts = append(parts, canonicalizePath(u.Path))
+	parts = append(parts, canonicalizeQuery(u.Query))
 	parts = append(parts, s.canonicalizeHeaders(request, headersToSign))
 	parts = append(parts, s.canonicalizeHeadersToSign(request, headersToSign))
-	fmt.Println(s.canonicalizeHeadersToSign(request, headersToSign))
 	parts = append(parts, s.computeDigest(request.Body))
 	canonicalizedRequest := strings.Join(parts, "\n")
 	return canonicalizedRequest
@@ -73,7 +72,7 @@ func (s *signer) SignedURLBy(httpMethod, urlToSign string, expires int) (string,
 		return "", err
 	}
 
-	date, err := s.config.GetDate()
+	date, err := s.config.DateInEscherFormat()
 
 	if err != nil {
 		return "", err
@@ -95,8 +94,6 @@ func (s *signer) SignedURLBy(httpMethod, urlToSign string, expires int) (string,
 		uri.RawQuery = uri.RawQuery + "&" + values.Encode()
 	}
 
-	fmt.Println("| | |")
-	fmt.Println(uri.String())
 	ereq := escher.Request{
 		Method:  httpMethod,
 		Url:     uri.String(),

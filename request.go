@@ -13,13 +13,17 @@ type Request struct {
 }
 
 func (r Request) Path() (string, error) {
-	url, err := url.Parse(r.Url)
+	u, err := url.Parse(r.Url)
 
 	if err != nil {
 		return "", err
 	}
 
-	return url.Path, err
+	if u.Path == "" {
+		return r.Url, nil
+	}
+
+	return u.Path, err
 }
 
 type QueryParts [][2]string

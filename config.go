@@ -41,10 +41,18 @@ func (c Config) ComposedAlgorithm() string {
 	return c.GetAlgoPrefix() + "-HMAC-" + c.GetHashAlgo()
 }
 
-func (c Config) GetDate() (string, error) {
+func (c Config) DateInEscherFormat() (string, error) {
+	return c.GetDateWithFormat(utils.EscherDateFormat)
+}
+
+func (c Config) DateInHTTPHeaderFormat() (string, error) {
+	return c.GetDateWithFormat(utils.HTTPHeaderFormat)
+}
+
+func (c Config) GetDateWithFormat(format string) (string, error) {
 
 	if c.Date == "" {
-		return time.Now().Format(utils.EscherDateFormat), nil
+		return time.Now().Format(format), nil
 	}
 
 	t, err := utils.ParseTime(c.Date)
@@ -53,7 +61,7 @@ func (c Config) GetDate() (string, error) {
 		return "", err
 	}
 
-	return t.Format(utils.EscherDateFormat), nil
+	return t.Format(format), nil
 
 }
 

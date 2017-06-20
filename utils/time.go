@@ -6,9 +6,11 @@ import (
 )
 
 const EscherDateFormat = "20060102T150405Z"
+const HTTPHeaderFormat = "Fri, 02 Jan 2006 15:04:05 GMT"
 
 var acceptedTimeFormats = []string{
 	EscherDateFormat,
+	HTTPHeaderFormat,
 	time.ANSIC,
 	time.UnixDate,
 	time.RubyDate,

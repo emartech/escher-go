@@ -5,7 +5,6 @@ import (
 	"encoding/hex"
 	"sort"
 	"strings"
-	"time"
 
 	escher "github.com/EscherAuth/escher"
 )
@@ -13,14 +12,16 @@ import (
 func (s *signer) getDefaultHeaders(request escher.Request) escher.RequestHeaders {
 	headers := request.Headers
 	var newHeaders escher.RequestHeaders
-	if !hasHeader(s.config.DateHeaderName, headers) {
+
+	// TODO: Should I remove date from the headers to sign in IsSigningInQuery case ?
+	if !hasHeader(s.config.DateHeaderName, headers) && !s.config.IsSigningInQuery(request) {
 		dateHeader := s.config.Date
 		if strings.ToLower(s.config.DateHeaderName) == "date" {
-			var t, _ = time.Parse("20060102T150405Z", s.config.Date)
-			dateHeader = t.Format("Fri, 02 Jan 2006 15:04:05 GMT")
+			dateHeader, _ = s.config.DateInHTTPHeaderFormat()
 		}
 		newHeaders = append(newHeaders, [2]string{s.config.DateHeaderName, dateHeader})
 	}
+
 	return newHeaders
 }
 
@@ -73,6 +74,7 @@ func (s *signer) canonicalizeHeaders(request escher.Request, headersToSign []str
 	headers := request.Headers
 	headersToSign = s.addDefaultsToHeadersToSign(request, headersToSign)
 	headers = s.keepHeadersToSign(headers, headersToSign)
+
 	var headersArray []string
 	headersHash := make(map[string][]string)
 
