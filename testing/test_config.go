@@ -6,8 +6,9 @@ import (
 	"testing"
 	"time"
 
-	escher "github.com/EscherAuth/escher"
+	"github.com/EscherAuth/escher"
 	"github.com/EscherAuth/escher/keydb"
+	"github.com/EscherAuth/escher/request"
 )
 
 type TestConfig struct {
@@ -15,7 +16,7 @@ type TestConfig struct {
 	HeadersToSign []string           `json:"headersToSign"`
 	Title         string             `json:"title"`
 	Description   string             `json:"description"`
-	Request       escher.Request     `json:"request"`
+	Request       request.Request    `json:"request"`
 	Config        escher.Config      `json:"config"`
 	Expected      TestConfigExpected `json:"expected"`
 	RawKeyDB      [][2]string        `json:"keyDb"`
@@ -57,6 +58,8 @@ func testConfigBy(t testing.TB, filePath string) TestConfig {
 	}
 
 	var testConfig TestConfig
+	testConfig.Request = request.NewUnsafeEmpty()
+	testConfig.Expected = TestConfigExpected{Request: request.NewUnsafeEmpty()}
 	json.Unmarshal(content, &testConfig)
 	testConfig.FilePath = filePath
 

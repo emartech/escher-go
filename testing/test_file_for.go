@@ -30,6 +30,10 @@ func testFilesFor(t testing.TB, dirname, prefix string) []string {
 			continue
 		}
 
+		if !isTestCaseAllowed(file.Name()) {
+			continue
+		}
+
 		if !file.IsDir() {
 			testFiles = append(testFiles, filepath.Join(dirname, file.Name()))
 		}

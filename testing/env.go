@@ -1,12 +1,25 @@
 package testing
 
 import (
+	"flag"
 	"os"
+	"regexp"
 	"strings"
 )
 
-func isFastFailEnabled() bool {
-	ff := os.Getenv("FAST_FAIL")
+var fastFail = flag.Bool("fast-fail", false, "set the test to exit on the first fail in every test case")
 
-	return strings.ToLower(ff) == "true"
+func isFastFailEnabled() bool {
+	return strings.ToLower(os.Getenv("FAST_FAIL")) == "true" || *fastFail
+}
+
+var testCase = flag.String("test-case", "", "run only the following test case")
+
+func isTestCaseAllowed(testCaseFileName string) bool {
+	if *testCase == "" {
+		return true
+	}
+
+	rgx := regexp.MustCompile(*testCase)
+	return rgx.MatchString(testCaseFileName)
 }

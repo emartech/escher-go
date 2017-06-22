@@ -10,7 +10,6 @@ func EachTestConfigFor(t testing.TB, topic string, tester func(escher.Config, Te
 	testedCases := make(map[bool]struct{})
 
 	for _, testConfig := range getTestConfigsForTopic(t, topic) {
-		testedCases[tester(fixedConfigBy(t, testConfig.Config), testConfig)] = struct{}{}
 
 		if testing.Verbose() {
 			t.Log("-----------------------------------------------")
@@ -21,6 +20,11 @@ func EachTestConfigFor(t testing.TB, topic string, tester func(escher.Config, Te
 			if testConfig.Description != "" {
 				t.Log(testConfig.Description)
 			}
+		}
+
+		testedCases[tester(fixedConfigBy(t, testConfig.Config), testConfig)] = struct{}{}
+
+		if testing.Verbose() {
 
 			if t.Failed() {
 				if isFastFailEnabled() {
