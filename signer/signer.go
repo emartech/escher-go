@@ -1,21 +1,23 @@
 package signer
 
 import (
+	"fmt"
 	"net/url"
 	"strconv"
 	"strings"
 
 	"github.com/EscherAuth/escher"
+	"github.com/EscherAuth/escher/request"
 )
 
 // Signer is the Escher Signing object interface
 type Signer interface {
 	// CanonicalizeRequest creates a unified representing form from the request in a string
-	CanonicalizeRequest(escher.Request, []string) string
-	GetStringToSign(escher.Request, []string) string
-	GenerateHeader(escher.Request, []string) string
-	SignRequest(escher.Request, []string) escher.Request
-	GenerateSignature(escher.Request, []string) string
+	CanonicalizeRequest(request.Request, []string) string
+	GetStringToSign(request.Request, []string) string
+	GenerateHeader(request.Request, []string) string
+	SignRequest(request.Request, []string) request.Request
+	GenerateSignature(request.Request, []string) string
 	SignedURLBy(httpMethod, urlToSign string, expires int) (string, error)
 }
 
@@ -28,39 +30,49 @@ func New(config escher.Config) Signer {
 	return &signer{config}
 }
 
-func (s *signer) SignRequest(request escher.Request, headersToSign []string) escher.Request {
-	var authHeader = s.GenerateHeader(request, headersToSign)
-	for _, header := range s.getDefaultHeaders(request) {
-		request.Headers = append(request.Headers, header)
+func (s *signer) SignRequest(r request.Request, headersToSign []string) request.Request {
+	headers := r.Headers()
+
+	var authHeader = s.GenerateHeader(r, headersToSign)
+	for _, header := range s.getDefaultHeaders(r) {
+		headers = append(headers, header)
 	}
-	request.Headers = append(request.Headers, [2]string{s.config.AuthHeaderName, authHeader})
-	return request
+	headers = append(headers, [2]string{s.config.AuthHeaderName, authHeader})
+	formedRequest, _ := request.New(
+		r.Method(),
+		r.RawURL(),
+		headers,
+		r.Body(),
+		r.Expires())
+
+	return formedRequest
 }
 
-func (s *signer) CanonicalizeRequest(request escher.Request, headersToSign []string) string {
+func (s *signer) CanonicalizeRequest(r request.Request, headersToSign []string) string {
 	// TODO: remove this shit
-	var u = parsePathQuery(request.Url)
+	var u = parsePathQuery(r.RawURL())
 	parts := make([]string, 0, 6)
-	parts = append(parts, request.Method)
+	parts = append(parts, r.Method())
 	parts = append(parts, canonicalizePath(u.Path))
 	parts = append(parts, canonicalizeQuery(u.Query))
-	parts = append(parts, s.canonicalizeHeaders(request, headersToSign))
-	parts = append(parts, s.canonicalizeHeadersToSign(request, headersToSign))
-	parts = append(parts, s.computeDigest(request.Body))
+	parts = append(parts, s.canonicalizeHeaders(r, headersToSign))
+	parts = append(parts, s.canonicalizeHeadersToSign(r, headersToSign))
+	parts = append(parts, s.computeDigest(r.Body()))
 	canonicalizedRequest := strings.Join(parts, "\n")
+	fmt.Println(canonicalizedRequest)
 	return canonicalizedRequest
 }
 
 // TODO: ComposedAlgorithm
-func (s *signer) GenerateHeader(request escher.Request, headersToSign []string) string {
+func (s *signer) GenerateHeader(r request.Request, headersToSign []string) string {
 	return s.config.AlgoPrefix + "-HMAC-" + s.config.HashAlgo + " " +
 		"Credential=" + s.generateCredentials() + ", " +
-		"SignedHeaders=" + s.canonicalizeHeadersToSign(request, headersToSign) + ", " +
-		"Signature=" + s.GenerateSignature(request, headersToSign)
+		"SignedHeaders=" + s.canonicalizeHeadersToSign(r, headersToSign) + ", " +
+		"Signature=" + s.GenerateSignature(r, headersToSign)
 }
 
-func (s *signer) GenerateSignature(request escher.Request, headersToSign []string) string {
-	var stringToSign = s.GetStringToSign(request, headersToSign)
+func (s *signer) GenerateSignature(r request.Request, headersToSign []string) string {
+	var stringToSign = s.GetStringToSign(r, headersToSign)
 	var signingKey = s.calculateSigningKey()
 	return s.calculateSignature(stringToSign, signingKey)
 }
@@ -94,13 +106,7 @@ func (s *signer) SignedURLBy(httpMethod, urlToSign string, expires int) (string,
 		uri.RawQuery = uri.RawQuery + "&" + values.Encode()
 	}
 
-	ereq := escher.Request{
-		Method:  httpMethod,
-		Url:     uri.String(),
-		Headers: headers,
-		Body:    "UNSIGNED-PAYLOAD",
-		Expires: expires,
-	}
+	ereq, _ := request.New(httpMethod, uri.String(), headers, "UNSIGNED-PAYLOAD", expires)
 
 	signature := s.GenerateSignature(ereq, headersToSign)
 
@@ -109,4 +115,11 @@ func (s *signer) SignedURLBy(httpMethod, urlToSign string, expires int) (string,
 	uri.RawQuery = uri.RawQuery + "&" + values.Encode()
 
 	return uri.String(), nil
+}
+
+func (s *signer) GetStringToSign(r request.Request, headersToSign []string) string {
+	return s.config.AlgoPrefix + "-HMAC-" + s.config.HashAlgo + "\n" +
+		s.config.Date + "\n" +
+		s.config.ShortDate() + "/" + s.config.CredentialScope + "\n" +
+		s.computeDigest(s.CanonicalizeRequest(r, headersToSign))
 }

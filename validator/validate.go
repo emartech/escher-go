@@ -16,10 +16,10 @@ import (
 func (v *validator) Validate(request escher.Request, keyDB keydb.KeyDB, mandatoryHeaders []string) (string, error) {
 
 	requestForSigning := &escher.Request{
-		Method:  request.Method,
-		Url:     request.Url,
 		Headers: request.Headers,
+		Method:  request.Method,
 		Body:    request.Body,
+		Url:     request.Url,
 	}
 
 	var rawDate string
@@ -110,11 +110,16 @@ func (v *validator) Validate(request escher.Request, keyDB keydb.KeyDB, mandator
 		return "", POSTRequestBodyIsEmpty
 	}
 
-	_, err = request.Path()
+	// u, err := url.Parse(request.Url)
+	_, err = url.Parse(request.Url)
 
 	if err != nil {
 		return "", err
 	}
+
+	// if u.Scheme != "" {
+	// 	return "", SchemaInURLNotAllowed
+	// }
 
 	if date.Format("20060102") != shortDate {
 		return "", CredentialDateNotMatching

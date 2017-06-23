@@ -48,7 +48,7 @@ func TestGenerateHeader(t *testing.T) {
 func TestSignRequest(t *testing.T) {
 	t.Log("SignRequest should return with a properly signed request")
 	EachTestConfigFor(t, "signRequest", func(config escher.Config, testConfig TestConfig) bool {
-		if testConfig.Expected.Request.Method == "" {
+		if testConfig.Expected.Request.Method() == "" {
 			return false
 		}
 
@@ -56,11 +56,11 @@ func TestSignRequest(t *testing.T) {
 		return assert.Equal(t, testConfig.Expected.Request, request, "Requests should be eq")
 	})
 }
- 
+
 func TestSignedURLBy(t *testing.T) {
 	t.Log("SignRequest should return with a properly signed request")
 	EachTestConfigFor(t, "presignurl", func(config escher.Config, testConfig TestConfig) bool {
-		signedURLStr, err := signer.New(config).SignedURLBy(testConfig.Request.Method, testConfig.Request.Url, testConfig.Request.Expires)
+		signedURLStr, err := signer.New(config).SignedURLBy(testConfig.Request.Method(), testConfig.Request.RawURL(), testConfig.Request.Expires())
 
 		if err != nil {
 			t.Fatal(err)

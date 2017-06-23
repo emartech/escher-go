@@ -1,9 +1,9 @@
 package escher
 
 import (
-	"net/url"
 	"time"
 
+	"github.com/EscherAuth/escher/request"
 	"github.com/EscherAuth/escher/utils"
 )
 
@@ -105,13 +105,7 @@ func (c Config) GetDateHeaderName() string {
 	return "X-Escher-Date"
 }
 
-func (c Config) IsSigningInQuery(r Request) bool {
-
-	uri, err := url.Parse(r.Url)
-
-	if err != nil {
-		return false
-	}
+func (c Config) IsSigningInQuery(r request.Request) bool {
 
 	requiredKeys := []string{
 		c.QueryKeyFor("Algorithm"),
@@ -120,9 +114,8 @@ func (c Config) IsSigningInQuery(r Request) bool {
 		c.QueryKeyFor("Expires"),
 		c.QueryKeyFor("SignedHeaders"),
 	}
-	// queryKey := c.QueryKeyFor("Signature")
 
-	values := uri.Query()
+	values := r.URL().Query()
 	for _, requiredKey := range requiredKeys {
 		if _, ok := values[requiredKey]; !ok {
 			return false

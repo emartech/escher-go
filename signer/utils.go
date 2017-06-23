@@ -4,7 +4,6 @@ import (
 	"crypto/sha256"
 	"crypto/sha512"
 
-	escher "github.com/EscherAuth/escher"
 	"github.com/PuerkitoBio/purell"
 
 	"hash"
@@ -12,6 +11,8 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+
+	"github.com/EscherAuth/escher/request"
 )
 
 func normalizeHeaderValue(value string) string {
@@ -64,13 +65,6 @@ func parsePathQuery(pathAndQuery string) parsedPathQuery {
 	return p
 }
 
-func (s *signer) GetStringToSign(request escher.Request, headersToSign []string) string {
-	return s.config.AlgoPrefix + "-HMAC-" + s.config.HashAlgo + "\n" +
-		s.config.Date + "\n" +
-		s.config.ShortDate() + "/" + s.config.CredentialScope + "\n" +
-		s.computeDigest(s.CanonicalizeRequest(request, headersToSign))
-}
-
 func sliceContainsCaseInsensitive(needle string, stack []string) bool {
 	needle = strings.ToLower(needle)
 	for _, item := range stack {
@@ -120,7 +114,7 @@ func canonicalizePath(path string) string {
 	return path
 }
 
-func hasHeader(headerName string, headers escher.RequestHeaders) bool {
+func hasHeader(headerName string, headers request.Headers) bool {
 	headerName = strings.ToLower(headerName)
 	for _, header := range headers {
 		hName := strings.ToLower(header[0])

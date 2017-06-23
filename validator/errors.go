@@ -17,4 +17,5 @@ var (
 	SignatureDoesNotMatch      = errors.New("The signatures do not match")
 	MalformedAuthHeader        = errors.New("Could not parse auth header")
 	SigningParamNotFound       = errors.New("Signing Param not found")
+	SchemaInURLNotAllowed      = errors.New("The request url shouldn't contains http or https")
 )

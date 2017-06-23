@@ -6,15 +6,16 @@ import (
 	"sort"
 	"strings"
 
-	escher "github.com/EscherAuth/escher"
+	"github.com/EscherAuth/escher"
+	"github.com/EscherAuth/escher/request"
 )
 
-func (s *signer) getDefaultHeaders(request escher.Request) escher.RequestHeaders {
-	headers := request.Headers
+func (s *signer) getDefaultHeaders(r request.Request) escher.RequestHeaders {
+	headers := request.Headers{}
 	var newHeaders escher.RequestHeaders
 
 	// TODO: Should I remove date from the headers to sign in IsSigningInQuery case ?
-	if !hasHeader(s.config.DateHeaderName, headers) && !s.config.IsSigningInQuery(request) {
+	if !hasHeader(s.config.DateHeaderName, headers) && !s.config.IsSigningInQuery(r) {
 		dateHeader := s.config.Date
 		if strings.ToLower(s.config.DateHeaderName) == "date" {
 			dateHeader, _ = s.config.DateInHTTPHeaderFormat()
@@ -25,8 +26,8 @@ func (s *signer) getDefaultHeaders(request escher.Request) escher.RequestHeaders
 	return newHeaders
 }
 
-func (s *signer) keepHeadersToSign(headers escher.RequestHeaders, headersToSign []string) escher.RequestHeaders {
-	var ret escher.RequestHeaders
+func (s *signer) keepHeadersToSign(headers request.Headers, headersToSign []string) request.Headers {
+	ret := request.Headers{}
 	for _, header := range headers {
 		hName := strings.ToLower(header[0])
 		for _, hNameToSign := range headersToSign {
@@ -38,13 +39,13 @@ func (s *signer) keepHeadersToSign(headers escher.RequestHeaders, headersToSign 
 	return ret
 }
 
-func (s *signer) addDefaultsToHeadersToSign(request escher.Request, headersToSign []string) []string {
+func (s *signer) addDefaultsToHeadersToSign(r request.Request, headersToSign []string) []string {
 
 	if !sliceContainsCaseInsensitive("host", headersToSign) {
 		headersToSign = append(headersToSign, "host")
 	}
 
-	if !s.config.IsSigningInQuery(request) && !sliceContainsCaseInsensitive(s.config.DateHeaderName, headersToSign) {
+	if !s.config.IsSigningInQuery(r) && !sliceContainsCaseInsensitive(s.config.DateHeaderName, headersToSign) {
 		headersToSign = append(headersToSign, s.config.DateHeaderName)
 	}
 
@@ -70,9 +71,9 @@ func (s *signer) generateCredentials() string {
 	return s.config.AccessKeyId + "/" + s.config.ShortDate() + "/" + s.config.CredentialScope
 }
 
-func (s *signer) canonicalizeHeaders(request escher.Request, headersToSign []string) string {
-	headers := request.Headers
-	headersToSign = s.addDefaultsToHeadersToSign(request, headersToSign)
+func (s *signer) canonicalizeHeaders(r request.Request, headersToSign []string) string {
+	headers := r.Headers()
+	headersToSign = s.addDefaultsToHeadersToSign(r, headersToSign)
 	headers = s.keepHeadersToSign(headers, headersToSign)
 
 	var headersArray []string
@@ -87,7 +88,7 @@ func (s *signer) canonicalizeHeaders(request escher.Request, headersToSign []str
 		headersArray = append(headersArray, strings.ToLower(hName)+":"+strings.Join(hValue, ",")+"\n")
 	}
 
-	for _, header := range s.getDefaultHeaders(request) {
+	for _, header := range s.getDefaultHeaders(r) {
 		headersArray = append(headersArray, strings.ToLower(header[0])+":"+header[1]+"\n")
 	}
 
@@ -95,8 +96,8 @@ func (s *signer) canonicalizeHeaders(request escher.Request, headersToSign []str
 	return strings.Join(headersArray, "")
 }
 
-func (s *signer) canonicalizeHeadersToSign(request escher.Request, headersToSign []string) string {
-	headers := s.addDefaultsToHeadersToSign(request, headersToSign)
+func (s *signer) canonicalizeHeadersToSign(r request.Request, headersToSign []string) string {
+	headers := s.addDefaultsToHeadersToSign(r, headersToSign)
 
 	var loweredHeaders []string
 	for _, header := range headers {

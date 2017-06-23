@@ -41,3 +41,5 @@ func TestValidateRequest(t *testing.T) {
 		return true
 	})
 }
+
+// TODO presign url stuff to be tested
