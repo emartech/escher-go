@@ -3,11 +3,12 @@ package testing
 import (
 	"io/ioutil"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"testing"
 )
 
-func testFilesFor(t testing.TB, dirname, prefix string) []string {
+func testFilesFor(t testing.TB, dirname, topic string) []string {
 	files, err := ioutil.ReadDir(dirname)
 
 	if err != nil {
@@ -26,7 +27,9 @@ func testFilesFor(t testing.TB, dirname, prefix string) []string {
 			continue
 		}
 
-		if !strings.HasPrefix(file.Name(), formattedPrefix(prefix)) {
+		rgx := regexp.MustCompile(regexp.QuoteMeta(formattedPrefix(topic)))
+
+		if !rgx.MatchString(file.Name()) {
 			continue
 		}
 
