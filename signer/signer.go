@@ -36,7 +36,7 @@ func (s *signer) SignRequest(r request.Interface, headersToSign []string) reques
 		headers = append(headers, header)
 	}
 	headers = append(headers, [2]string{s.config.AuthHeaderName, authHeader})
-	formedRequest, _ := request.New(
+	formedRequest := request.New(
 		r.Method(),
 		r.RawURL(),
 		headers,
@@ -103,7 +103,7 @@ func (s *signer) SignedURLBy(httpMethod, urlToSign string, expires int) (string,
 		uri.RawQuery = uri.RawQuery + "&" + values.Encode()
 	}
 
-	ereq, _ := request.New(httpMethod, uri.String(), headers, "UNSIGNED-PAYLOAD", expires)
+	ereq := request.New(httpMethod, uri.String(), headers, "UNSIGNED-PAYLOAD", expires)
 
 	signature := s.GenerateSignature(ereq, headersToSign)
 

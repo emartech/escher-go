@@ -7,7 +7,11 @@ func (r *Request) Query() Query {
 }
 
 func (r *Request) DelQueryValueByKey(key string) error {
-	uri := r.URL()
+	uri, err := r.URL()
+
+	if err != nil {
+		return err
+	}
 
 	values := uri.Query()
 	values.Del(key)

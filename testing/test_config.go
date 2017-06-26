@@ -58,8 +58,6 @@ func testConfigBy(t testing.TB, filePath string) TestConfig {
 	}
 
 	var testConfig TestConfig
-	// testConfig.Request = request.NewUnsafeEmpty()
-	// testConfig.Expected = TestConfigExpected{Request: request.NewUnsafeEmpty()}
 	json.Unmarshal(content, &testConfig)
 	testConfig.FilePath = filePath
 

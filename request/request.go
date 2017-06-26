@@ -6,7 +6,7 @@ import (
 )
 
 type Interface interface {
-	URL() *url.URL
+	URL() (*url.URL, error)
 	Path() string
 	Body() string
 	Query() Query
@@ -18,8 +18,6 @@ type Interface interface {
 }
 
 type Request struct {
-	// UniversalResourceLocator *url.URL
-
 	url     string
 	body    string
 	method  string
@@ -31,9 +29,8 @@ func (r *Request) Path() string {
 	return r.parsePathQuery().Path
 }
 
-func (r *Request) URL() *url.URL {
-	u, _ := url.Parse(r.url)
-	return u
+func (r *Request) URL() (*url.URL, error) {
+	return url.Parse(r.url)
 }
 
 func (r *Request) RawURL() string {
