@@ -3,10 +3,11 @@ package validator
 import (
 	escher "github.com/EscherAuth/escher"
 	"github.com/EscherAuth/escher/keydb"
+	"github.com/EscherAuth/escher/request"
 )
 
 type Validator interface {
-	Validate(request escher.Request, keyDB keydb.KeyDB, mandatoryHeaders []string) (string, error)
+	Validate(request.Interface, keydb.KeyDB, []string) (string, error)
 }
 
 type validator struct {

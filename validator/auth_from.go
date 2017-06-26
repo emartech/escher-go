@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	escher "github.com/EscherAuth/escher"
+	"github.com/EscherAuth/escher/request"
 )
 
 func (v *validator) getAuthPartsFromHeader(authHeader string) (algorithm, apiKeyID, shortDate, credentialScope string, signedHeaders []string, signature string, expires uint64, err error) {
@@ -32,8 +32,8 @@ func (v *validator) getAuthPartsFromHeader(authHeader string) (algorithm, apiKey
 	return
 }
 
-func (v *validator) getAuthPartsFromQuery(queryParts escher.QueryParts) (algorithm, apiKeyID, shortDate, credentialScope string, signedHeaders []string, signature string, expires uint64, err error) {
-	rawExpires, err := v.getSigningParam("Expires", queryParts)
+func (v *validator) getAuthPartsFromQuery(query request.Query) (algorithm, apiKeyID, shortDate, credentialScope string, signedHeaders []string, signature string, expires uint64, err error) {
+	rawExpires, err := v.getSigningParam("Expires", query)
 	if err != nil {
 		return
 	}
@@ -43,20 +43,20 @@ func (v *validator) getAuthPartsFromQuery(queryParts escher.QueryParts) (algorit
 		return
 	}
 
-	credential, err := v.getSigningParam("Credentials", queryParts)
+	credential, err := v.getSigningParam("Credentials", query)
 	if err != nil {
 		return
 	}
 	credentialParts := strings.SplitN(credential, "/", 3)
 	apiKeyID, shortDate, credentialScope = credentialParts[0], credentialParts[1], credentialParts[2]
 
-	rawSignedHeaders, err := v.getSigningParam("SignedHeaders", queryParts)
+	rawSignedHeaders, err := v.getSigningParam("SignedHeaders", query)
 	if err != nil {
 		return
 	}
 	signedHeaders = strings.Split(rawSignedHeaders, ";")
 
-	rawAlgorithm, err := v.getSigningParam("Algorithm", queryParts)
+	rawAlgorithm, err := v.getSigningParam("Algorithm", query)
 	if err != nil {
 		return
 	}
@@ -66,7 +66,7 @@ func (v *validator) getAuthPartsFromQuery(queryParts escher.QueryParts) (algorit
 		return
 	}
 
-	signature, err = v.getSigningParam("Signature", queryParts)
+	signature, err = v.getSigningParam("Signature", query)
 
 	return
 }

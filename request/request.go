@@ -31,10 +31,6 @@ func (r *Request) Path() string {
 	return r.parsePathQuery().Path
 }
 
-func (r *Request) Query() Query {
-	return r.parsePathQuery().Query
-}
-
 func (r *Request) URL() *url.URL {
 	u, _ := url.Parse(r.url)
 	return u

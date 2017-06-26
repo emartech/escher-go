@@ -15,7 +15,7 @@ func TestValidateRequest(t *testing.T) {
 	EachTestConfigFor(t, "authenticate", func(config escher.Config, testConfig TestConfig) bool {
 
 		escherValidator := validator.New(config)
-		apiKeyID, err := escherValidator.Validate(testConfig.Request, testConfig.KeyDB(), nil)
+		apiKeyID, err := escherValidator.Validate(&testConfig.Request, testConfig.KeyDB(), nil)
 		expectedErrorMessage := testConfig.Expected.Error
 
 		if expectedErrorMessage != "" {
@@ -29,7 +29,7 @@ func TestValidateRequest(t *testing.T) {
 		if err != nil {
 			t.Log("There shouldn't be any error but the following received: " + err.Error())
 			escherSigner := signer.New(config)
-			canonizedRequest := escherSigner.CanonicalizeRequest(testConfig.Request, testConfig.HeadersToSign)
+			canonizedRequest := escherSigner.CanonicalizeRequest(&testConfig.Request, testConfig.HeadersToSign)
 			t.Log("\n" + canonizedRequest)
 			t.FailNow()
 		}

@@ -7,57 +7,46 @@ import (
 	"strings"
 	"time"
 
-	escher "github.com/EscherAuth/escher"
 	"github.com/EscherAuth/escher/keydb"
+	"github.com/EscherAuth/escher/request"
 	"github.com/EscherAuth/escher/signer"
 	"github.com/EscherAuth/escher/utils"
 )
 
-func (v *validator) Validate(request escher.Request, keyDB keydb.KeyDB, mandatoryHeaders []string) (string, error) {
-
-	requestForSigning := &escher.Request{
-		Headers: request.Headers,
-		Method:  request.Method,
-		Body:    request.Body,
-		Url:     request.Url,
-	}
+func (v *validator) Validate(r request.Interface, keyDB keydb.KeyDB, mandatoryHeaders []string) (string, error) {
+	requestForSigning, _ := request.New(r.Method(), r.RawURL(), r.Headers(), v.bodyForSignatureGeneration(r), r.Expires())
 
 	var rawDate string
 	var expires uint64
 	var algorithm, apiKeyID, shortDate, credentialScope, signature string
 	var signedHeaders []string
 
-	queryParts, err := request.QueryParts()
-
-	if err != nil {
-		return "", err
-	}
+	headers := r.Headers()
+	query := r.Query()
 
 	expectedHeaders := []string{"Host"}
+	isSigningInQuery := v.config.IsSigningInQuery(r)
 
-	signatureInQuery := v.config.IsSigningInQuery(request)
-
-	if !signatureInQuery {
+	if !isSigningInQuery {
 		expectedHeaders = append(expectedHeaders, v.config.GetAuthHeaderName(), v.config.GetDateHeaderName())
 	}
 
 	for _, headerKey := range expectedHeaders {
-		_, ok := request.Headers.Get(headerKey)
+		_, ok := headers.Get(headerKey)
 		if !ok {
 			return "", errors.New("The " + strings.ToLower(headerKey) + " header is missing")
 		}
 	}
 
-	if signatureInQuery {
-		requestForSigning.Body = "UNSIGNED-PAYLOAD"
-
-		rawDate, err = v.getSigningParam("Date", queryParts)
+	if isSigningInQuery {
+		var err error
+		rawDate, err = v.getSigningParam("Date", query)
 
 		if err != nil {
 			return "", MissingDateParam
 		}
 
-		algorithm, apiKeyID, shortDate, credentialScope, signedHeaders, signature, expires, err = v.getAuthPartsFromQuery(queryParts)
+		algorithm, apiKeyID, shortDate, credentialScope, signedHeaders, signature, expires, err = v.getAuthPartsFromQuery(query)
 
 		if err != nil {
 			return "", err
@@ -67,18 +56,19 @@ func (v *validator) Validate(request escher.Request, keyDB keydb.KeyDB, mandator
 	} else {
 
 		var ok bool
-		rawDate, ok = request.Headers.Get(v.config.GetDateHeaderName())
+		rawDate, ok = headers.Get(v.config.GetDateHeaderName())
 
 		if !ok {
 			return "", errors.New("The " + v.config.GetDateHeaderName() + " header is missing")
 		}
 
-		authHeader, ok := request.Headers.Get(v.config.GetAuthHeaderName())
+		authHeader, ok := headers.Get(v.config.GetAuthHeaderName())
 
 		if !ok {
 			return "", errors.New("The " + v.config.GetAuthHeaderName() + " header is missing")
 		}
 
+		var err error
 		algorithm, apiKeyID, shortDate, credentialScope, signedHeaders, signature, expires, err = v.getAuthPartsFromHeader(authHeader)
 
 		if err != nil {
@@ -102,20 +92,20 @@ func (v *validator) Validate(request escher.Request, keyDB keydb.KeyDB, mandator
 		return "", AlgorithmNotAllowed
 	}
 
-	if !isValidRequestMethod(request.Method) {
+	if !isValidRequestMethod(r.Method()) {
 		return "", RequestMethodIsInvalid
 	}
 
-	if strings.ToUpper(request.Method) == "POST" && request.Body == "" {
+	if strings.ToUpper(r.Method()) == "POST" && r.Body() == "" {
 		return "", POSTRequestBodyIsEmpty
 	}
 
-	// u, err := url.Parse(request.Url)
-	_, err = url.Parse(request.Url)
+	// // u, err := url.Parse(request.Url)
+	// _, err = url.Parse(r.Url)
 
-	if err != nil {
-		return "", err
-	}
+	// if err != nil {
+	// 	return "", err
+	// }
 
 	// if u.Scheme != "" {
 	// 	return "", SchemaInURLNotAllowed
@@ -149,17 +139,17 @@ func (v *validator) Validate(request escher.Request, keyDB keydb.KeyDB, mandator
 		}
 	}
 
-	if signatureInQuery && !isSignedHeadersOnlyInclude(signedHeaders, "host") {
+	if isSigningInQuery && !isSignedHeadersOnlyInclude(signedHeaders, "host") {
 		return "", HostHeaderNotSigned
 	}
 
-	if !signatureInQuery && !isSignedHeadersInlcude(signedHeaders, v.config.GetDateHeaderName()) {
+	if !isSigningInQuery && !isSignedHeadersInlcude(signedHeaders, v.config.GetDateHeaderName()) {
 		return "", DateHeaderIsNotSigned
 	}
 
 	s := signer.New(v.config.Reconfig(date.Format(utils.EscherDateFormat), algorithm, credentialScope, apiKeyID, apiSecret))
 
-	expectedSignature := s.GenerateSignature(*requestForSigning, signedHeaders)
+	expectedSignature := s.GenerateSignature(requestForSigning, signedHeaders)
 
 	if expectedSignature != signature {
 		return "", SignatureDoesNotMatch
@@ -193,9 +183,9 @@ func rgxNamedMatch(rgx *regexp.Regexp, text string) (map[string]string, error) {
 	return result, nil
 }
 
-func (v *validator) getSigningParam(key string, queryParts escher.QueryParts) (string, error) {
+func (v *validator) getSigningParam(key string, query request.Query) (string, error) {
 	queryKey := v.config.QueryKeyFor(key)
-	for _, part := range queryParts {
+	for _, part := range query {
 		if part[0] == queryKey {
 			return url.QueryUnescape(part[1])
 		}
@@ -266,4 +256,16 @@ func (v *validator) Time() time.Time {
 	}
 
 	return time.Now()
+}
+
+func (v *validator) bodyForSignatureGeneration(r request.Interface) string {
+	var body string
+
+	if v.config.IsSigningInQuery(r) {
+		body = "UNSIGNED-PAYLOAD"
+	} else {
+		body = r.Body()
+	}
+
+	return body
 }
