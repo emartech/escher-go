@@ -11,7 +11,6 @@ import (
 
 // Signer is the Escher Signing object interface
 type Signer interface {
-	// CanonicalizeRequest creates a unified representing form from the request in a string
 	CanonicalizeRequest(request.Interface, []string) string
 	GetStringToSign(request.Interface, []string) string
 	GenerateHeader(request.Interface, []string) string
