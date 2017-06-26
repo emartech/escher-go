@@ -25,7 +25,7 @@ func parseQuery(query string) [][2]string {
 	return q
 }
 
-func (r *request) parsePathQuery() parsedPathQuery {
+func (r *Request) parsePathQuery() parsedPathQuery {
 	u, err := url.Parse(r.url)
 	var p parsedPathQuery
 	s := strings.SplitN(r.url, "?", 2)

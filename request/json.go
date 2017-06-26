@@ -12,17 +12,17 @@ type jsonMapper struct {
 	Headers [][2]string `json:"headers"`
 }
 
-func ParseJSON(data []byte) (Request, error) {
-	r := &request{}
+func ParseJSON(data []byte) (*Request, error) {
+	r := &Request{}
 	err := mapJSONContentToRequest(r, data)
 	return r, err
 }
 
-func (r *request) UnmarshalJSON(data []byte) error {
+func (r *Request) UnmarshalJSON(data []byte) error {
 	return mapJSONContentToRequest(r, data)
 }
 
-func mapJSONContentToRequest(r *request, data []byte) error {
+func mapJSONContentToRequest(r *Request, data []byte) error {
 	var j jsonMapper
 	err := json.Unmarshal(data, &j)
 

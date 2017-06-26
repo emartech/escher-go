@@ -9,7 +9,7 @@ import (
 	"github.com/EscherAuth/escher/request"
 )
 
-func (s *signer) getDefaultHeaders(r request.Request) request.Headers {
+func (s *signer) getDefaultHeaders(r request.Interface) request.Headers {
 	headers := r.Headers()
 	var newHeaders request.Headers
 
@@ -41,7 +41,7 @@ func (s *signer) keepHeadersToSign(headers request.Headers, headersToSign []stri
 	return ret
 }
 
-func (s *signer) addDefaultsToHeadersToSign(r request.Request, headersToSign []string) []string {
+func (s *signer) addDefaultsToHeadersToSign(r request.Interface, headersToSign []string) []string {
 
 	if !sliceContainsCaseInsensitive("host", headersToSign) {
 		headersToSign = append(headersToSign, "host")
@@ -73,7 +73,7 @@ func (s *signer) generateCredentials() string {
 	return s.config.AccessKeyId + "/" + s.config.ShortDate() + "/" + s.config.CredentialScope
 }
 
-func (s *signer) canonicalizeHeaders(r request.Request, headersToSign []string) string {
+func (s *signer) canonicalizeHeaders(r request.Interface, headersToSign []string) string {
 	headers := r.Headers()
 	headersToSign = s.addDefaultsToHeadersToSign(r, headersToSign)
 	headers = s.keepHeadersToSign(headers, headersToSign)
@@ -98,7 +98,7 @@ func (s *signer) canonicalizeHeaders(r request.Request, headersToSign []string) 
 	return strings.Join(headersArray, "")
 }
 
-func (s *signer) canonicalizeHeadersToSign(r request.Request, headersToSign []string) string {
+func (s *signer) canonicalizeHeadersToSign(r request.Interface, headersToSign []string) string {
 	headers := s.addDefaultsToHeadersToSign(r, headersToSign)
 
 	var loweredHeaders []string

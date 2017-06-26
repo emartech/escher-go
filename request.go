@@ -65,7 +65,7 @@ func (r *Request) DelQueryValueByKey(key string) error {
 
 // ToDo: remove this later
 
-func (r Request) parsePathQuery(pathAndQuery string) parsedPathQuery {
+func (r *Request) parsePathQuery(pathAndQuery string) parsedPathQuery {
 	u, err := url.Parse(pathAndQuery)
 	var p parsedPathQuery
 	s := strings.SplitN(pathAndQuery, "?", 2)

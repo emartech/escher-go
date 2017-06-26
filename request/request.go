@@ -5,7 +5,7 @@ import (
 	"net/url"
 )
 
-type Request interface {
+type Interface interface {
 	URL() *url.URL
 	Path() string
 	Body() string
@@ -17,7 +17,7 @@ type Request interface {
 	json.Unmarshaler
 }
 
-type request struct {
+type Request struct {
 	// UniversalResourceLocator *url.URL
 
 	url     string
@@ -27,35 +27,35 @@ type request struct {
 	headers Headers
 }
 
-func (r *request) Path() string {
+func (r *Request) Path() string {
 	return r.parsePathQuery().Path
 }
 
-func (r *request) Query() Query {
+func (r *Request) Query() Query {
 	return r.parsePathQuery().Query
 }
 
-func (r *request) URL() *url.URL {
+func (r *Request) URL() *url.URL {
 	u, _ := url.Parse(r.url)
 	return u
 }
 
-func (r *request) RawURL() string {
+func (r *Request) RawURL() string {
 	return r.url
 }
 
-func (r *request) Headers() Headers {
+func (r *Request) Headers() Headers {
 	return r.headers
 }
 
-func (r *request) Method() string {
+func (r *Request) Method() string {
 	return r.method
 }
 
-func (r *request) Body() string {
+func (r *Request) Body() string {
 	return r.body
 }
 
-func (r *request) Expires() int {
+func (r *Request) Expires() int {
 	return r.expires
 }

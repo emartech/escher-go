@@ -6,11 +6,11 @@ func New(
 	headers [][2]string,
 	body string,
 	expires int,
-) (Request, error) {
+) (*Request, error) {
 
 	// uri, err := url.Parse(urlString)
 
-	return &request{
+	return &Request{
 		method:  method,
 		url:     urlString,
 		headers: headers,
@@ -19,8 +19,4 @@ func New(
 		// UniversalResourceLocator: uri,
 	}, nil
 
-}
-
-func NewUnsafeEmpty() Request {
-	return &request{}
 }

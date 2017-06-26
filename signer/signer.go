@@ -12,11 +12,11 @@ import (
 // Signer is the Escher Signing object interface
 type Signer interface {
 	// CanonicalizeRequest creates a unified representing form from the request in a string
-	CanonicalizeRequest(request.Request, []string) string
-	GetStringToSign(request.Request, []string) string
-	GenerateHeader(request.Request, []string) string
-	SignRequest(request.Request, []string) request.Request
-	GenerateSignature(request.Request, []string) string
+	CanonicalizeRequest(request.Interface, []string) string
+	GetStringToSign(request.Interface, []string) string
+	GenerateHeader(request.Interface, []string) string
+	SignRequest(request.Interface, []string) request.Interface
+	GenerateSignature(request.Interface, []string) string
 	SignedURLBy(httpMethod, urlToSign string, expires int) (string, error)
 }
 
@@ -29,7 +29,7 @@ func New(config escher.Config) Signer {
 	return &signer{config}
 }
 
-func (s *signer) SignRequest(r request.Request, headersToSign []string) request.Request {
+func (s *signer) SignRequest(r request.Interface, headersToSign []string) request.Interface {
 	headers := r.Headers()
 
 	var authHeader = s.GenerateHeader(r, headersToSign)
@@ -47,7 +47,7 @@ func (s *signer) SignRequest(r request.Request, headersToSign []string) request.
 	return formedRequest
 }
 
-func (s *signer) CanonicalizeRequest(r request.Request, headersToSign []string) string {
+func (s *signer) CanonicalizeRequest(r request.Interface, headersToSign []string) string {
 	// TODO: remove this shit
 	var u = parsePathQuery(r.RawURL())
 	parts := make([]string, 0, 6)
@@ -62,14 +62,14 @@ func (s *signer) CanonicalizeRequest(r request.Request, headersToSign []string) 
 }
 
 // TODO: ComposedAlgorithm
-func (s *signer) GenerateHeader(r request.Request, headersToSign []string) string {
+func (s *signer) GenerateHeader(r request.Interface, headersToSign []string) string {
 	return s.config.AlgoPrefix + "-HMAC-" + s.config.HashAlgo + " " +
 		"Credential=" + s.generateCredentials() + ", " +
 		"SignedHeaders=" + s.canonicalizeHeadersToSign(r, headersToSign) + ", " +
 		"Signature=" + s.GenerateSignature(r, headersToSign)
 }
 
-func (s *signer) GenerateSignature(r request.Request, headersToSign []string) string {
+func (s *signer) GenerateSignature(r request.Interface, headersToSign []string) string {
 	var stringToSign = s.GetStringToSign(r, headersToSign)
 	var signingKey = s.calculateSigningKey()
 	return s.calculateSignature(stringToSign, signingKey)
@@ -115,7 +115,7 @@ func (s *signer) SignedURLBy(httpMethod, urlToSign string, expires int) (string,
 	return uri.String(), nil
 }
 
-func (s *signer) GetStringToSign(r request.Request, headersToSign []string) string {
+func (s *signer) GetStringToSign(r request.Interface, headersToSign []string) string {
 	return s.config.AlgoPrefix + "-HMAC-" + s.config.HashAlgo + "\n" +
 		s.config.Date + "\n" +
 		s.config.ShortDate() + "/" + s.config.CredentialScope + "\n" +

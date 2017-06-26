@@ -16,7 +16,7 @@ func TestCanonicalizeRequest(t *testing.T) {
 			return false
 		}
 
-		canonicalizedRequest := signer.New(config).CanonicalizeRequest(testConfig.Request, testConfig.HeadersToSign)
+		canonicalizedRequest := signer.New(config).CanonicalizeRequest(&testConfig.Request, testConfig.HeadersToSign)
 		return assert.Equal(t, testConfig.Expected.CanonicalizedRequest, canonicalizedRequest, "canonicalizedRequest should be eq")
 	})
 }
@@ -28,7 +28,7 @@ func TestGetStringToSign(t *testing.T) {
 			return false
 		}
 
-		stringToSign := signer.New(config).GetStringToSign(testConfig.Request, testConfig.HeadersToSign)
+		stringToSign := signer.New(config).GetStringToSign(&testConfig.Request, testConfig.HeadersToSign)
 		return assert.Equal(t, stringToSign, testConfig.Expected.StringToSign, "stringToSign expected to eq with the test config expectation")
 	})
 }
@@ -40,7 +40,7 @@ func TestGenerateHeader(t *testing.T) {
 			return false
 		}
 
-		authHeader := signer.New(config).GenerateHeader(testConfig.Request, testConfig.HeadersToSign)
+		authHeader := signer.New(config).GenerateHeader(&testConfig.Request, testConfig.HeadersToSign)
 		return assert.Equal(t, testConfig.Expected.AuthHeader, authHeader, "authHeader generation failed")
 	})
 }
@@ -48,19 +48,23 @@ func TestGenerateHeader(t *testing.T) {
 func TestSignRequest(t *testing.T) {
 	t.Log("SignRequest should return with a properly signed request")
 	EachTestConfigFor(t, "signRequest", func(config escher.Config, testConfig TestConfig) bool {
-		if testConfig.Expected.Request.Method() == "" {
+		expectedRequest := &testConfig.Expected.Request
+
+		if expectedRequest.Method() == "" {
 			return false
 		}
 
-		request := signer.New(config).SignRequest(testConfig.Request, testConfig.HeadersToSign)
-		return assert.Equal(t, testConfig.Expected.Request, request, "Requests should be eq")
+		request := signer.New(config).SignRequest(&testConfig.Request, testConfig.HeadersToSign)
+		return assert.Equal(t, expectedRequest, request, "Requests should be eq")
 	})
 }
 
 func TestSignedURLBy(t *testing.T) {
 	t.Log("SignRequest should return with a properly signed request")
 	EachTestConfigFor(t, "presignurl", func(config escher.Config, testConfig TestConfig) bool {
-		signedURLStr, err := signer.New(config).SignedURLBy(testConfig.Request.Method(), testConfig.Request.RawURL(), testConfig.Request.Expires())
+		r := &testConfig.Request
+
+		signedURLStr, err := signer.New(config).SignedURLBy(r.Method(), r.RawURL(), r.Expires())
 
 		if err != nil {
 			t.Fatal(err)

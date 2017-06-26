@@ -105,7 +105,7 @@ func (c Config) GetDateHeaderName() string {
 	return "X-Escher-Date"
 }
 
-func (c Config) IsSigningInQuery(r request.Request) bool {
+func (c Config) IsSigningInQuery(r request.Interface) bool {
 
 	requiredKeys := []string{
 		c.QueryKeyFor("Algorithm"),
