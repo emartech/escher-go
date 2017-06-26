@@ -15,26 +15,26 @@ func EachTestConfigFor(t testing.TB, topic string, tester func(escher.Config, Te
 			t.Log("-----------------------------------------------")
 
 			t.Log(testConfig.getTitle())
-			t.Log(testConfig.FilePath)
-
 			if testConfig.Description != "" {
 				t.Log(testConfig.Description)
 			}
+
+			t.Log(testConfig.FilePath)
 		}
 
 		testedCases[tester(fixedConfigBy(t, testConfig.Config), testConfig)] = struct{}{}
 
 		if testing.Verbose() {
 
-			if t.Failed() {
-				if isFastFailEnabled() {
-					t.FailNow()
-				}
-			} else {
+			if !t.Failed() {
 				t.Log("OK")
 			}
 
 			t.Log("-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --\n")
+		}
+
+		if isFastFailEnabled() {
+			t.FailNow()
 		}
 
 	}
