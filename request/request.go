@@ -5,8 +5,6 @@ import (
 	"net/url"
 )
 
-type Query [][2]string
-
 type Request interface {
 	URL() *url.URL
 	Path() string

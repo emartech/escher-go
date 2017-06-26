@@ -13,7 +13,7 @@ func isFastFailEnabled() bool {
 	return strings.ToLower(os.Getenv("FAST_FAIL")) == "true" || *fastFail
 }
 
-var testCase = flag.String("test-case", "", "run only the following test case")
+var testCase = flag.String("case", "", "run only the following test case")
 
 func isTestCaseAllowed(testCaseFileName string) bool {
 	if *testCase == "" {

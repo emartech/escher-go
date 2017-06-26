@@ -6,20 +6,22 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/EscherAuth/escher"
 	"github.com/EscherAuth/escher/request"
 )
 
-func (s *signer) getDefaultHeaders(r request.Request) escher.RequestHeaders {
-	headers := request.Headers{}
-	var newHeaders escher.RequestHeaders
+func (s *signer) getDefaultHeaders(r request.Request) request.Headers {
+	headers := r.Headers()
+	var newHeaders request.Headers
 
 	// TODO: Should I remove date from the headers to sign in IsSigningInQuery case ?
 	if !hasHeader(s.config.DateHeaderName, headers) && !s.config.IsSigningInQuery(r) {
-		dateHeader := s.config.Date
+		var dateHeader string
 		if strings.ToLower(s.config.DateHeaderName) == "date" {
 			dateHeader, _ = s.config.DateInHTTPHeaderFormat()
+		} else {
+			dateHeader, _ = s.config.DateInEscherFormat()
 		}
+
 		newHeaders = append(newHeaders, [2]string{s.config.DateHeaderName, dateHeader})
 	}
 

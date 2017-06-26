@@ -115,9 +115,9 @@ func (c Config) IsSigningInQuery(r request.Request) bool {
 		c.QueryKeyFor("SignedHeaders"),
 	}
 
-	values := r.URL().Query()
+	q := r.Query()
 	for _, requiredKey := range requiredKeys {
-		if _, ok := values[requiredKey]; !ok {
+		if !q.IsInclude(requiredKey) {
 			return false
 		}
 	}

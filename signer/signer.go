@@ -1,7 +1,6 @@
 package signer
 
 import (
-	"fmt"
 	"net/url"
 	"strconv"
 	"strings"
@@ -59,7 +58,6 @@ func (s *signer) CanonicalizeRequest(r request.Request, headersToSign []string) 
 	parts = append(parts, s.canonicalizeHeadersToSign(r, headersToSign))
 	parts = append(parts, s.computeDigest(r.Body()))
 	canonicalizedRequest := strings.Join(parts, "\n")
-	fmt.Println(canonicalizedRequest)
 	return canonicalizedRequest
 }
 
