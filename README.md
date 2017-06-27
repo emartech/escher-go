@@ -25,3 +25,13 @@ About Escher
 ------------
 
 More details are available at our [Escher documentation site](http://escherauth.io/).
+
+Install
+-------
+
+```bash
+# install dep management tool
+go get -u github.com/golang/dep/cmd/dep
+# dep ensure the missing dependency packages
+dep ensure
+```
