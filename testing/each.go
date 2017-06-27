@@ -6,10 +6,10 @@ import (
 	escher "github.com/EscherAuth/escher"
 )
 
-func EachTestConfigFor(t testing.TB, topic string, tester func(escher.Config, TestConfig) bool) {
+func EachTestConfigFor(t testing.TB, topics []string, tester func(escher.Config, TestConfig) bool) {
 	testedCases := make(map[bool]struct{})
 
-	for _, testConfig := range getTestConfigsForTopic(t, topic) {
+	for _, testConfig := range getTestConfigsForTopic(t, topics) {
 
 		if testing.Verbose() {
 			t.Log("-----------------------------------------------")

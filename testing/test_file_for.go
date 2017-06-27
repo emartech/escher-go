@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-func testFilesFor(t testing.TB, dirname, topic string) []string {
+func testFilesFor(t testing.TB, dirname string, topics []string) []string {
 	files, err := ioutil.ReadDir(dirname)
 
 	if err != nil {
@@ -27,9 +27,7 @@ func testFilesFor(t testing.TB, dirname, topic string) []string {
 			continue
 		}
 
-		rgx := regexp.MustCompile(regexp.QuoteMeta(formattedPrefix(topic)))
-
-		if !rgx.MatchString(file.Name()) {
+		if !MatchAll(file.Name(), topics) {
 			continue
 		}
 
@@ -46,6 +44,13 @@ func testFilesFor(t testing.TB, dirname, topic string) []string {
 	return testFiles
 }
 
-func formattedPrefix(prefix string) string {
-	return strings.ToLower(prefix)
+func MatchAll(s string, matchers []string) bool {
+	for _, matcher := range matchers {
+		rgx := regexp.MustCompile(regexp.QuoteMeta(strings.ToLower(matcher)))
+
+		if !rgx.MatchString(s) {
+			return false
+		}
+	}
+	return true
 }

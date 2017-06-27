@@ -11,7 +11,7 @@ import (
 
 func TestCanonicalizeRequest(t *testing.T) {
 	t.Log("CanonicalizeRequest should return with a proper string")
-	EachTestConfigFor(t, "signRequest", func(config escher.Config, testConfig TestConfig) bool {
+	EachTestConfigFor(t, []string{"signRequest"}, func(config escher.Config, testConfig TestConfig) bool {
 		if testConfig.Expected.CanonicalizedRequest == "" {
 			return false
 		}
@@ -23,7 +23,7 @@ func TestCanonicalizeRequest(t *testing.T) {
 
 func TestGetStringToSign(t *testing.T) {
 	t.Log("GetStringToSign should return with a proper string")
-	EachTestConfigFor(t, "signRequest", func(config escher.Config, testConfig TestConfig) bool {
+	EachTestConfigFor(t, []string{"signRequest"}, func(config escher.Config, testConfig TestConfig) bool {
 		if testConfig.Expected.StringToSign == "" {
 			return false
 		}
@@ -35,7 +35,7 @@ func TestGetStringToSign(t *testing.T) {
 
 func TestGenerateHeader(t *testing.T) {
 	t.Log("GenerateHeader should return with a proper string")
-	EachTestConfigFor(t, "signRequest", func(config escher.Config, testConfig TestConfig) bool {
+	EachTestConfigFor(t, []string{"signRequest"}, func(config escher.Config, testConfig TestConfig) bool {
 		if testConfig.Expected.AuthHeader == "" {
 			return false
 		}
@@ -47,7 +47,7 @@ func TestGenerateHeader(t *testing.T) {
 
 func TestSignRequest(t *testing.T) {
 	t.Log("SignRequest should return with a properly signed request")
-	EachTestConfigFor(t, "signRequest", func(config escher.Config, testConfig TestConfig) bool {
+	EachTestConfigFor(t, []string{"signRequest"}, func(config escher.Config, testConfig TestConfig) bool {
 		expectedRequest := &testConfig.Expected.Request
 
 		if expectedRequest.Method() == "" {
@@ -61,7 +61,7 @@ func TestSignRequest(t *testing.T) {
 
 func TestSignedURLBy(t *testing.T) {
 	t.Log("SignRequest should return with a properly signed request")
-	EachTestConfigFor(t, "presignurl", func(config escher.Config, testConfig TestConfig) bool {
+	EachTestConfigFor(t, []string{"presignurl"}, func(config escher.Config, testConfig TestConfig) bool {
 		r := &testConfig.Request
 
 		signedURLStr, err := signer.New(config).SignedURLBy(r.Method(), r.RawURL(), r.Expires())

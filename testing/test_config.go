@@ -12,15 +12,16 @@ import (
 )
 
 type TestConfig struct {
-	ID            string
-	HeadersToSign []string           `json:"headersToSign"`
-	Title         string             `json:"title"`
-	Description   string             `json:"description"`
-	Request       request.Request    `json:"request"`
-	Config        escher.Config      `json:"config"`
-	Expected      TestConfigExpected `json:"expected"`
-	RawKeyDB      [][2]string        `json:"keyDb"`
-	FilePath      string
+	ID                     string
+	HeadersToSign          []string           `json:"headersToSign"`
+	Title                  string             `json:"title"`
+	Description            string             `json:"description"`
+	Request                request.Request    `json:"request"`
+	Config                 escher.Config      `json:"config"`
+	Expected               TestConfigExpected `json:"expected"`
+	RawKeyDB               [][2]string        `json:"keyDb"`
+	FilePath               string
+	MandatorySignedHeaders []string `json:"mandatorySignedHeaders"`
 }
 
 func (testConfig TestConfig) KeyDB() keydb.KeyDB {

@@ -1,18 +1,15 @@
 package testing
 
 import (
-	"io/ioutil"
 	"os"
-	"path/filepath"
-	"strings"
 	"testing"
 )
 
-func getTestConfigsForTopic(t testing.TB, topic string) []TestConfig {
+func getTestConfigsForTopic(t testing.TB, topics []string) []TestConfig {
 	configs := make([]TestConfig, 0)
 
 	for _, dirPath := range getTestCaseDirectories(t) {
-		for _, filePath := range testFilesFor(t, dirPath, topic) {
+		for _, filePath := range testFilesFor(t, dirPath, topics) {
 			configs = append(configs, testConfigBy(t, filePath))
 		}
 	}
@@ -34,32 +31,4 @@ func testSuitePath(t testing.TB) string {
 	}
 
 	return testSuitePath
-}
-
-func getTestCaseDirectories(t testing.TB) []string {
-	testDir := testSuitePath(t)
-
-	files, err := ioutil.ReadDir(testDir)
-
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	dirs := make([]string, 0)
-
-	for _, file := range files {
-
-		if !file.IsDir() {
-			continue
-		}
-
-		if strings.HasPrefix(file.Name(), ".") {
-			continue
-		}
-
-		dirs = append(dirs, filepath.Join(testDir, file.Name()))
-
-	}
-
-	return dirs
 }
