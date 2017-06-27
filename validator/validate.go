@@ -14,7 +14,7 @@ import (
 )
 
 func (v *validator) Validate(r request.Interface, keyDB keydb.KeyDB, mandatoryHeaders []string) (string, error) {
-	requestForSigning, _ := request.New(r.Method(), r.RawURL(), r.Headers(), v.bodyForSignatureGeneration(r), r.Expires())
+	requestForSigning := request.New(r.Method(), r.RawURL(), r.Headers(), v.bodyForSignatureGeneration(r), r.Expires())
 
 	var rawDate string
 	var expires uint64
@@ -85,7 +85,7 @@ func (v *validator) Validate(r request.Interface, keyDB keydb.KeyDB, mandatoryHe
 	apiSecret, err := keyDB.GetSecret(apiKeyID)
 
 	if err != nil {
-		return "", InvalidAPIKey
+		return "", InvalidEscherKey
 	}
 
 	if algorithm != "SHA256" && algorithm != "SHA512" {
@@ -100,7 +100,7 @@ func (v *validator) Validate(r request.Interface, keyDB keydb.KeyDB, mandatoryHe
 		return "", POSTRequestBodyIsEmpty
 	}
 
-	// // u, err := url.Parse(request.Url)
+	// u, err := url.Parse(request.Url)
 	// _, err = url.Parse(r.Url)
 
 	// if err != nil {
@@ -145,6 +145,16 @@ func (v *validator) Validate(r request.Interface, keyDB keydb.KeyDB, mandatoryHe
 
 	if !isSigningInQuery && !isSignedHeadersInlcude(signedHeaders, v.config.GetDateHeaderName()) {
 		return "", DateHeaderIsNotSigned
+	}
+
+	u, err := r.URL()
+
+	if err != nil {
+		return "", err
+	}
+
+	if u.Scheme != "" {
+		return "", HTTPSchemaFoundInTheURL
 	}
 
 	s := signer.New(v.config.Reconfig(date.Format(utils.EscherDateFormat), algorithm, credentialScope, apiKeyID, apiSecret))

@@ -10,36 +10,69 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// TODO presign url stuff to be tested
+
+func isHappyPath(t testing.TB, validatorErr error, config escher.Config, testConfig TestConfig) bool {
+
+	if testConfig.Expected.Error != "" {
+		return false
+	}
+
+	if validatorErr == nil {
+		return true
+	}
+
+	t.Log("There shouldn't be any error but the following received: " + validatorErr.Error())
+	t.Log("\n" + signer.New(config).CanonicalizeRequest(&testConfig.Request, testConfig.HeadersToSign))
+	t.Fail()
+
+	return false
+}
+
 func TestValidateRequest(t *testing.T) {
 	t.Log("Authenticate the incoming request")
-	EachTestConfigFor(t, "authenticate", func(config escher.Config, testConfig TestConfig) bool {
+	EachTestConfigFor(t, []string{"authenticate"}, func(config escher.Config, testConfig TestConfig) bool {
 
-		escherValidator := validator.New(config)
-		apiKeyID, err := escherValidator.Validate(&testConfig.Request, testConfig.KeyDB(), nil)
-		expectedErrorMessage := testConfig.Expected.Error
+		apiKeyID, err := validator.New(config).Validate(&testConfig.Request, testConfig.KeyDB(), nil)
 
-		if expectedErrorMessage != "" {
-			if err == nil {
-				t.Fatal("error object expected, but nothing was returned (" + expectedErrorMessage + ")")
-			}
-
-			return assert.Equal(t, expectedErrorMessage, err.Error(), expectedErrorMessage)
+		if !isHappyPath(t, err, config, testConfig) {
+			t.Log("not happy path case")
+			return false
 		}
 
-		if err != nil {
-			t.Log("There shouldn't be any error but the following received: " + err.Error())
-			escherSigner := signer.New(config)
-			canonizedRequest := escherSigner.CanonicalizeRequest(&testConfig.Request, testConfig.HeadersToSign)
-			t.Log("\n" + canonizedRequest)
-			t.FailNow()
+		if testConfig.Expected.APIKeyID == "" {
+			t.Log(testConfig.FilePath)
+			t.Log(testConfig.FilePath)
+			t.Log(testConfig.FilePath)
+			t.Log(testConfig.FilePath)
+			t.Log(testConfig.FilePath)
 		}
 
-		if testConfig.Expected.APIKeyID != "" {
-			assert.Equal(t, testConfig.Expected.APIKeyID, apiKeyID)
-		}
+		assert.Equal(t, testConfig.Expected.APIKeyID, apiKeyID)
 
 		return true
 	})
 }
 
-// TODO presign url stuff to be tested
+func TestValidateErrorCases(t *testing.T) {
+	t.Log("Authenticate the incoming request")
+	EachTestConfigFor(t, []string{"authenticate", "error"}, func(config escher.Config, testConfig TestConfig) bool {
+
+		_, err := validator.New(config).Validate(&testConfig.Request, testConfig.KeyDB(), testConfig.MandatorySignedHeaders)
+
+		expectedErrorMessage := testConfig.Expected.Error
+
+		if expectedErrorMessage == "" {
+			t.Log("no expectedErrorMessage found, skipping test")
+			return false
+		}
+
+		if err == nil {
+			t.Error("error object expected, but nothing was returned (" + expectedErrorMessage + ")")
+			return false
+		}
+
+		return assert.Equal(t, expectedErrorMessage, err.Error(), expectedErrorMessage)
+
+	})
+}

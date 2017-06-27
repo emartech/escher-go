@@ -4,7 +4,7 @@ import "errors"
 
 var (
 	MissingDateParam           = errors.New("missing date param")
-	InvalidAPIKey              = errors.New("Invalid API key")
+	InvalidEscherKey           = errors.New("Invalid Escher key")
 	AlgorithmNotAllowed        = errors.New("Only SHA256 and SHA512 hash algorithms are allowed")
 	RequestMethodIsInvalid     = errors.New("The request method is invalid")
 	POSTRequestBodyIsEmpty     = errors.New("The request body shouldn't be empty if the request method is POST")
@@ -18,4 +18,5 @@ var (
 	MalformedAuthHeader        = errors.New("Could not parse auth header")
 	SigningParamNotFound       = errors.New("Signing Param not found")
 	SchemaInURLNotAllowed      = errors.New("The request url shouldn't contains http or https")
+	HTTPSchemaFoundInTheURL    = errors.New("The request url shouldn't contains http or https")
 )
