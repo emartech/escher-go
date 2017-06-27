@@ -28,12 +28,14 @@ func EachTestConfigFor(t testing.TB, topics []string, tester func(escher.Config,
 
 			if !t.Failed() {
 				t.Log("OK")
+			} else {
+				t.Log("ERROR")
 			}
 
 			t.Log("-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --\n")
 		}
 
-		if isFastFailEnabled() {
+		if isFastFailEnabled() && t.Failed() {
 			t.FailNow()
 		}
 
