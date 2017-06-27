@@ -44,24 +44,27 @@ func TestSignRequestHappyPath(t *testing.T) {
 	t.Log("SignRequest should return with a properly signed request")
 	EachTestConfigFor(t, []string{"signRequest"}, []string{"error"}, func(config escher.Config, testConfig TestConfig) bool {
 		signedRequest, err := signer.New(config).SignRequest(&testConfig.Request, testConfig.HeadersToSign)
-		assert.Equal(t, nil, err, "no error is expected in the happy path")
-		return assert.Equal(t, testConfig.Expected.Request, signedRequest)
+
+		if !assert.NoError(t, err) {
+			return false
+		}
+
+		if !assert.NotNil(t, signedRequest) {
+			return false
+		}
+
+		return assert.Equal(t, testConfig.Expected.Request, *signedRequest)
 	})
 }
 
-// func TestSignRequestError(t *testing.T) {
-// 	t.Log("SignRequest should return error about what was wrong with the given request to sign")
-// 	EachTestConfigFor(t, []string{"signRequest", "error"}, []string{}, func(config escher.Config, testConfig TestConfig) bool {
-// 		expectedRequest := &testConfig.Expected.Request
+func TestSignRequestError(t *testing.T) {
+	t.Log("SignRequest should return error about what was wrong with the given request to sign")
+	EachTestConfigFor(t, []string{"signRequest", "error"}, []string{}, func(config escher.Config, testConfig TestConfig) bool {
+		_, err := signer.New(config).SignRequest(&testConfig.Request, testConfig.HeadersToSign)
 
-// 		if expectedRequest.Method() == "" {
-// 			return false
-// 		}
-
-// 		request := signer.New(config).SignRequest(&testConfig.Request, testConfig.HeadersToSign)
-// 		return assert.Equal(t, expectedRequest, request, "Requests should be eq")
-// 	})
-// }
+		return assert.EqualError(t, err, testConfig.Expected.Error)
+	})
+}
 
 func TestSignedURLBy(t *testing.T) {
 	t.Log("SignRequest should return with a properly signed request")

@@ -11,7 +11,7 @@ import (
 
 // Signer is the Escher Signing object interface
 type Signer interface {
-	SignRequest(request.Interface, []string) (request.Request, error)
+	SignRequest(request.Interface, []string) (*request.Request, error)
 
 	CanonicalizeRequest(request.Interface, []string) string
 	GetStringToSign(request.Interface, []string) string
@@ -29,7 +29,13 @@ func New(config escher.Config) Signer {
 	return &signer{config}
 }
 
-func (s *signer) SignRequest(r request.Interface, headersToSign []string) (request.Request, error) {
+func (s *signer) SignRequest(r request.Interface, headersToSign []string) (*request.Request, error) {
+	err := s.config.Validate(r)
+
+	if err != nil {
+		return nil, err
+	}
+
 	headers := r.Headers()
 
 	var authHeader = s.GenerateHeader(r, headersToSign)
@@ -38,7 +44,7 @@ func (s *signer) SignRequest(r request.Interface, headersToSign []string) (reque
 	}
 	headers = append(headers, [2]string{s.config.AuthHeaderName, authHeader})
 
-	return *request.New(
+	return request.New(
 			r.Method(),
 			r.RawURL(),
 			headers,
