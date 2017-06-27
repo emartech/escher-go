@@ -5,11 +5,11 @@ import (
 	"testing"
 )
 
-func getTestConfigsForTopic(t testing.TB, topics []string) []TestConfig {
+func getTestConfigsForTopic(t testing.TB, includes, ignores []string) []TestConfig {
 	configs := make([]TestConfig, 0)
 
 	for _, dirPath := range getTestCaseDirectories(t) {
-		for _, filePath := range testFilesFor(t, dirPath, topics) {
+		for _, filePath := range testFilesFor(t, dirPath, includes, ignores) {
 			configs = append(configs, testConfigBy(t, filePath))
 		}
 	}

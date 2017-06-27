@@ -11,10 +11,11 @@ import (
 
 // Signer is the Escher Signing object interface
 type Signer interface {
+	SignRequest(request.Interface, []string) (request.Request, error)
+
 	CanonicalizeRequest(request.Interface, []string) string
 	GetStringToSign(request.Interface, []string) string
 	GenerateHeader(request.Interface, []string) string
-	SignRequest(request.Interface, []string) request.Interface
 	GenerateSignature(request.Interface, []string) string
 	SignedURLBy(httpMethod, urlToSign string, expires int) (string, error)
 }
@@ -28,7 +29,7 @@ func New(config escher.Config) Signer {
 	return &signer{config}
 }
 
-func (s *signer) SignRequest(r request.Interface, headersToSign []string) request.Interface {
+func (s *signer) SignRequest(r request.Interface, headersToSign []string) (request.Request, error) {
 	headers := r.Headers()
 
 	var authHeader = s.GenerateHeader(r, headersToSign)
@@ -36,14 +37,14 @@ func (s *signer) SignRequest(r request.Interface, headersToSign []string) reques
 		headers = append(headers, header)
 	}
 	headers = append(headers, [2]string{s.config.AuthHeaderName, authHeader})
-	formedRequest := request.New(
-		r.Method(),
-		r.RawURL(),
-		headers,
-		r.Body(),
-		r.Expires())
 
-	return formedRequest
+	return *request.New(
+			r.Method(),
+			r.RawURL(),
+			headers,
+			r.Body(),
+			r.Expires()),
+		nil
 }
 
 func (s *signer) CanonicalizeRequest(r request.Interface, headersToSign []string) string {

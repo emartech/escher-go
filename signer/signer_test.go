@@ -1,6 +1,7 @@
 package signer_test
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/EscherAuth/escher"
@@ -11,31 +12,25 @@ import (
 
 func TestCanonicalizeRequest(t *testing.T) {
 	t.Log("CanonicalizeRequest should return with a proper string")
-	EachTestConfigFor(t, []string{"signRequest"}, func(config escher.Config, testConfig TestConfig) bool {
-		if testConfig.Expected.CanonicalizedRequest == "" {
-			return false
-		}
-
+	EachTestConfigFor(t, []string{"signRequest"}, []string{"error"}, func(config escher.Config, testConfig TestConfig) bool {
 		canonicalizedRequest := signer.New(config).CanonicalizeRequest(&testConfig.Request, testConfig.HeadersToSign)
+
 		return assert.Equal(t, testConfig.Expected.CanonicalizedRequest, canonicalizedRequest, "canonicalizedRequest should be eq")
 	})
 }
 
 func TestGetStringToSign(t *testing.T) {
 	t.Log("GetStringToSign should return with a proper string")
-	EachTestConfigFor(t, []string{"signRequest"}, func(config escher.Config, testConfig TestConfig) bool {
-		if testConfig.Expected.StringToSign == "" {
-			return false
-		}
-
+	EachTestConfigFor(t, []string{"signRequest"}, []string{"error"}, func(config escher.Config, testConfig TestConfig) bool {
 		stringToSign := signer.New(config).GetStringToSign(&testConfig.Request, testConfig.HeadersToSign)
+
 		return assert.Equal(t, stringToSign, testConfig.Expected.StringToSign, "stringToSign expected to eq with the test config expectation")
 	})
 }
 
 func TestGenerateHeader(t *testing.T) {
 	t.Log("GenerateHeader should return with a proper string")
-	EachTestConfigFor(t, []string{"signRequest"}, func(config escher.Config, testConfig TestConfig) bool {
+	EachTestConfigFor(t, []string{"signRequest"}, []string{}, func(config escher.Config, testConfig TestConfig) bool {
 		if testConfig.Expected.AuthHeader == "" {
 			return false
 		}
@@ -45,23 +40,32 @@ func TestGenerateHeader(t *testing.T) {
 	})
 }
 
-func TestSignRequest(t *testing.T) {
+func TestSignRequestHappyPath(t *testing.T) {
 	t.Log("SignRequest should return with a properly signed request")
-	EachTestConfigFor(t, []string{"signRequest"}, func(config escher.Config, testConfig TestConfig) bool {
-		expectedRequest := &testConfig.Expected.Request
-
-		if expectedRequest.Method() == "" {
-			return false
-		}
-
-		request := signer.New(config).SignRequest(&testConfig.Request, testConfig.HeadersToSign)
-		return assert.Equal(t, expectedRequest, request, "Requests should be eq")
+	EachTestConfigFor(t, []string{"signRequest"}, []string{"error"}, func(config escher.Config, testConfig TestConfig) bool {
+		signedRequest, err := signer.New(config).SignRequest(&testConfig.Request, testConfig.HeadersToSign)
+		assert.Equal(t, nil, err, "no error is expected in the happy path")
+		return assert.Equal(t, testConfig.Expected.Request, signedRequest)
 	})
 }
 
+// func TestSignRequestError(t *testing.T) {
+// 	t.Log("SignRequest should return error about what was wrong with the given request to sign")
+// 	EachTestConfigFor(t, []string{"signRequest", "error"}, []string{}, func(config escher.Config, testConfig TestConfig) bool {
+// 		expectedRequest := &testConfig.Expected.Request
+
+// 		if expectedRequest.Method() == "" {
+// 			return false
+// 		}
+
+// 		request := signer.New(config).SignRequest(&testConfig.Request, testConfig.HeadersToSign)
+// 		return assert.Equal(t, expectedRequest, request, "Requests should be eq")
+// 	})
+// }
+
 func TestSignedURLBy(t *testing.T) {
 	t.Log("SignRequest should return with a properly signed request")
-	EachTestConfigFor(t, []string{"presignurl"}, func(config escher.Config, testConfig TestConfig) bool {
+	EachTestConfigFor(t, []string{"presignurl"}, []string{}, func(config escher.Config, testConfig TestConfig) bool {
 		r := &testConfig.Request
 
 		signedURLStr, err := signer.New(config).SignedURLBy(r.Method(), r.RawURL(), r.Expires())
@@ -72,4 +76,12 @@ func TestSignedURLBy(t *testing.T) {
 
 		return assert.Equal(t, testConfig.Expected.URL, signedURLStr)
 	})
+}
+
+func escapeToJSONStringFormat(s string) string {
+	bs, err := json.Marshal(s)
+	if err != nil {
+		panic(err)
+	}
+	return string(bs)
 }

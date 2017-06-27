@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-func testFilesFor(t testing.TB, dirname string, topics []string) []string {
+func testFilesFor(t testing.TB, dirname string, includes, ignores []string) []string {
 	files, err := ioutil.ReadDir(dirname)
 
 	if err != nil {
@@ -27,7 +27,7 @@ func testFilesFor(t testing.TB, dirname string, topics []string) []string {
 			continue
 		}
 
-		if !MatchAll(file.Name(), topics) {
+		if !isIncludedTestCase(file.Name(), includes, ignores) {
 			continue
 		}
 
@@ -44,13 +44,28 @@ func testFilesFor(t testing.TB, dirname string, topics []string) []string {
 	return testFiles
 }
 
-func MatchAll(s string, matchers []string) bool {
-	for _, matcher := range matchers {
-		rgx := regexp.MustCompile(regexp.QuoteMeta(strings.ToLower(matcher)))
+func isIncludedTestCase(s string, includes, ignores []string) bool {
+
+	for _, ignore := range ignores {
+		rgx := rgxForMatcher(ignore)
+
+		if rgx.MatchString(s) {
+			return false
+		}
+	}
+
+	for _, include := range includes {
+		rgx := rgxForMatcher(include)
 
 		if !rgx.MatchString(s) {
 			return false
 		}
 	}
+
 	return true
+
+}
+
+func rgxForMatcher(s string) *regexp.Regexp {
+	return regexp.MustCompile("(?i)" + regexp.QuoteMeta(s))
 }
