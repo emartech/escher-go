@@ -9,8 +9,8 @@ import (
 	"net/url"
 	"strings"
 
-	escher "github.com/EscherAuth/escher"
 	"github.com/EscherAuth/escher/keydb"
+	"github.com/EscherAuth/escher/request"
 )
 
 type prox struct {
@@ -31,7 +31,7 @@ func (p *prox) Handle(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("X-GoProxy", "GoProxy")
 	validator := Validator{}
 	keyDb := keydb.NewBySlice([][2]string{})
-	_, err := validator.Validate(escher.Request{}, keyDb, nil)
+	_, err := validator.Validate(request.Request{}, keyDb, nil)
 	if err != nil {
 		out, err := ioutil.ReadAll(r.Body)
 		defer r.Body.Close()
@@ -63,6 +63,6 @@ func NewMyReader(s string) *myReader {
 type Validator struct {
 }
 
-func (v *Validator) Validate(request escher.Request, keyDB keydb.KeyDB, mandatoryHeaders []string) (string, error) {
+func (v *Validator) Validate(r request.Request, keyDB keydb.KeyDB, mandatoryHeaders []string) (string, error) {
 	return "API_KEY", errors.New("KACSA")
 }
