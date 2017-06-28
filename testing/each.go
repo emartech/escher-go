@@ -3,10 +3,10 @@ package testing
 import (
 	"testing"
 
-	escher "github.com/EscherAuth/escher"
+	"github.com/EscherAuth/escher/config"
 )
 
-func EachTestConfigFor(t testing.TB, includes, ignores []string,  tester func(escher.Config, TestConfig) bool) {
+func EachTestConfigFor(t testing.TB, includes, ignores []string, tester func(config.Config, TestConfig) bool) {
 	testedCases := make(map[bool]struct{})
 
 	for _, testConfig := range getTestConfigsForTopic(t, includes, ignores) {

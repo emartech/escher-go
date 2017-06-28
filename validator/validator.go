@@ -1,7 +1,7 @@
 package validator
 
 import (
-	escher "github.com/EscherAuth/escher"
+	"github.com/EscherAuth/escher/config"
 	"github.com/EscherAuth/escher/keydb"
 	"github.com/EscherAuth/escher/request"
 )
@@ -11,9 +11,9 @@ type Validator interface {
 }
 
 type validator struct {
-	config escher.Config
+	config config.Config
 }
 
-func New(config escher.Config) Validator {
-	return &validator{config}
+func New(c config.Config) Validator {
+	return &validator{c}
 }

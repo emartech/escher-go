@@ -3,7 +3,7 @@ package validator_test
 import (
 	"testing"
 
-	escher "github.com/EscherAuth/escher"
+	"github.com/EscherAuth/escher/config"
 	"github.com/EscherAuth/escher/signer"
 	. "github.com/EscherAuth/escher/testing"
 	"github.com/EscherAuth/escher/validator"
@@ -12,7 +12,7 @@ import (
 
 // TODO presign url stuff to be tested
 
-func isHappyPath(t testing.TB, validatorErr error, config escher.Config, testConfig TestConfig) bool {
+func isHappyPath(t testing.TB, validatorErr error, c config.Config, testConfig TestConfig) bool {
 
 	if testConfig.Expected.Error != "" {
 		return false
@@ -23,7 +23,7 @@ func isHappyPath(t testing.TB, validatorErr error, config escher.Config, testCon
 	}
 
 	t.Log("There shouldn't be any error but the following received: " + validatorErr.Error())
-	t.Log("\n" + signer.New(config).CanonicalizeRequest(&testConfig.Request, testConfig.HeadersToSign))
+	t.Log("\n" + signer.New(c).CanonicalizeRequest(&testConfig.Request, testConfig.HeadersToSign))
 	t.Fail()
 
 	return false
@@ -31,11 +31,11 @@ func isHappyPath(t testing.TB, validatorErr error, config escher.Config, testCon
 
 func TestValidateRequest(t *testing.T) {
 	t.Log("Authenticate the incoming request")
-	EachTestConfigFor(t, []string{"authenticate"}, []string{}, func(config escher.Config, testConfig TestConfig) bool {
+	EachTestConfigFor(t, []string{"authenticate"}, []string{}, func(c config.Config, testConfig TestConfig) bool {
 
-		apiKeyID, err := validator.New(config).Validate(&testConfig.Request, testConfig.KeyDB(), nil)
+		apiKeyID, err := validator.New(c).Validate(&testConfig.Request, testConfig.KeyDB(), nil)
 
-		if !isHappyPath(t, err, config, testConfig) {
+		if !isHappyPath(t, err, c, testConfig) {
 			t.Log("not happy path case")
 			return false
 		}
@@ -56,9 +56,9 @@ func TestValidateRequest(t *testing.T) {
 
 func TestValidateErrorCases(t *testing.T) {
 	t.Log("Authenticate the incoming request")
-	EachTestConfigFor(t, []string{"authenticate", "error"}, []string{}, func(config escher.Config, testConfig TestConfig) bool {
+	EachTestConfigFor(t, []string{"authenticate", "error"}, []string{}, func(c config.Config, testConfig TestConfig) bool {
 
-		_, err := validator.New(config).Validate(&testConfig.Request, testConfig.KeyDB(), testConfig.MandatorySignedHeaders)
+		_, err := validator.New(c).Validate(&testConfig.Request, testConfig.KeyDB(), testConfig.MandatorySignedHeaders)
 
 		expectedErrorMessage := testConfig.Expected.Error
 

@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/EscherAuth/escher"
+	"github.com/EscherAuth/escher/config"
 	"github.com/EscherAuth/escher/request"
 )
 
@@ -21,12 +21,12 @@ type Signer interface {
 }
 
 type signer struct {
-	config escher.Config
+	config config.Config
 }
 
 // New Create a signer object that behaves by the Signer Interface
-func New(config escher.Config) Signer {
-	return &signer{config}
+func New(c config.Config) Signer {
+	return &signer{c}
 }
 
 func (s *signer) SignRequest(r request.Interface, headersToSign []string) (*request.Request, error) {

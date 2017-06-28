@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/EscherAuth/escher"
+	"github.com/EscherAuth/escher/config"
 	"github.com/EscherAuth/escher/keydb"
 	"github.com/EscherAuth/escher/request"
 )
@@ -17,7 +17,7 @@ type TestConfig struct {
 	Title                  string             `json:"title"`
 	Description            string             `json:"description"`
 	Request                request.Request    `json:"request"`
-	Config                 escher.Config      `json:"config"`
+	Config                 config.Config      `json:"config"`
 	Expected               TestConfigExpected `json:"expected"`
 	RawKeyDB               [][2]string        `json:"keyDb"`
 	FilePath               string
@@ -38,17 +38,17 @@ func (testConfig TestConfig) getTitle() string {
 	return title
 }
 
-func fixedConfigBy(tb testing.TB, config escher.Config) escher.Config {
-	var t, err = time.Parse("2006-01-02T15:04:05.999999Z", config.Date)
+func fixedConfigBy(tb testing.TB, c config.Config) config.Config {
+	var t, err = time.Parse("2006-01-02T15:04:05.999999Z", c.Date)
 	if err != nil {
-		t, err = time.Parse("Fri, 02 Jan 2006 15:04:05 GMT", config.Date)
+		t, err = time.Parse("Fri, 02 Jan 2006 15:04:05 GMT", c.Date)
 	}
 	if err != nil {
 		t = time.Now().UTC()
 	}
-	config.Date = t.Format("20060102T150405Z")
+	c.Date = t.Format("20060102T150405Z")
 
-	return config
+	return c
 }
 
 func testConfigBy(t testing.TB, filePath string) TestConfig {
