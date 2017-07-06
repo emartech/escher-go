@@ -86,8 +86,6 @@ func (config EscherConfig) canonicalizeHeaders(headers EscherRequestHeaders, hea
     headersArray = append(headersArray, strings.ToLower(hName) + ":" + strings.Join(hValue, ",") + "\n")
   }
   for _, header := range config.getDefaultHeaders(headers) {
-    r := 1/(len(headers) - 2)
-    r++
     headersArray = append(headersArray, strings.ToLower(header[0]) + ":" + header[1] + "\n")
   }
   sort.Strings(headersArray)
