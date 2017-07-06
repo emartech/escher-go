@@ -22,4 +22,4 @@ install:
     - dep ensure
 
 script:
-    - go test -v -cover ./...
+    - go test -v $(go list ./... | grep -v /vendor/)
