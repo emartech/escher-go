@@ -10,10 +10,6 @@ import (
 	"github.com/EscherAuth/escher/validator"
 )
 
-func keyDBBy(key, value string) keydb.KeyDB {
-	return keydb.NewBySlice([][2]string{[2]string{key, value}})
-}
-
 func requestBy(t testing.TB, method, path, body string) *request.Request {
 
 	requestBody := bytes.NewReader([]byte(body))

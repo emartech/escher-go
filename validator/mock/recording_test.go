@@ -3,6 +3,7 @@ package mock_test
 import (
 	"testing"
 
+	"github.com/EscherAuth/escher/keydb"
 	"github.com/EscherAuth/escher/validator"
 	"github.com/EscherAuth/escher/validator/mock"
 	"github.com/stretchr/testify/assert"
@@ -44,7 +45,7 @@ func TestErrorRecording(t *testing.T) {
 func testWithValidator(t testing.TB, v validator.Validator, expectedApiKey string, expectedError error) {
 
 	req := requestBy(t, "GET", "/test", "Hello, World!")
-	exampleKeyDB := keyDBBy("Foo", "Baz")
+	exampleKeyDB := keydb.NewByKeyValuePair("Foo", "Baz")
 	mandatoryHeaders := []string{"X-Company-Stuff"}
 
 	_, err := v.Validate(req, exampleKeyDB, mandatoryHeaders)
