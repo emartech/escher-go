@@ -6,8 +6,7 @@ import (
 )
 
 func SetEnvForTheTest(t testing.TB, key, value string) func() {
-
-	orgEnvValue, envKeyWasSetBeforeTheTest := os.LookupEnv(key)
+	restorer := envRestorerFor(t, key)
 
 	err := os.Setenv(key, value)
 
@@ -15,11 +14,31 @@ func SetEnvForTheTest(t testing.TB, key, value string) func() {
 		t.Fatal(err)
 	}
 
+	return restorer
+}
+
+func UnsetEnvForTheTest(t testing.TB, key string) func() {
+	restorer := envRestorerFor(t, key)
+
+	err := os.Unsetenv(key)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	return restorer
+}
+
+func envRestorerFor(t testing.TB, key string) func() {
+
+	originalValue, keyWasSet := os.LookupEnv(key)
+
 	return func() {
 
 		var err error
-		if envKeyWasSetBeforeTheTest {
-			err = os.Setenv(key, orgEnvValue)
+
+		if keyWasSet {
+			err = os.Setenv(key, originalValue)
 		} else {
 			err = os.Unsetenv(key)
 		}
