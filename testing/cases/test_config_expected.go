@@ -1,4 +1,4 @@
-package testing
+package cases
 
 import "github.com/EscherAuth/escher/request"
 

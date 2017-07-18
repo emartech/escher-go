@@ -6,7 +6,7 @@ import (
 
 	"github.com/EscherAuth/escher/config"
 	"github.com/EscherAuth/escher/signer"
-	. "github.com/EscherAuth/escher/testing"
+	. "github.com/EscherAuth/escher/testing/cases"
 	"github.com/stretchr/testify/assert"
 )
 
