@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/EscherAuth/escher/keydb"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestNewByKeyValuePair(t *testing.T) {
@@ -39,16 +38,7 @@ func TestNewBySlice(t *testing.T) {
 
 }
 
-func TestSecretNotFound(t *testing.T) {
-
-	subject := keydb.NewByKeyValuePair("FOO", "baz")
-
-	_, err := subject.GetSecret("Baz")
-
-	if err == nil {
-		t.Fatal("Expected error but nothing raised")
-	} else {
-		assert.EqualError(t, err, "KeyID Not Found")
-	}
+func TestNewFromENV() {
+	defer Set
 
 }
