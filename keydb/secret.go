@@ -1,11 +1,11 @@
 package keydb
 
-func (kd *keydb) GetSecret(keyID string) (string, error) {
-	secret, ok := kd.db[keyID]
+func (kd keydb) GetSecret(keyID string) (string, error) {
+	secrets, ok := kd[keyID]
 
 	if !ok {
-		return secret, KeyIDNotFound
+		return "", KeyIDNotFound
 	}
 
-	return secret, nil
+	return secrets[0], nil
 }
