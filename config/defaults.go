@@ -8,7 +8,7 @@ const (
 	defaultDateHeaderName = "X-Escher-Date"
 )
 
-func setDefaults(c *Config) {
+func SetDefaults(c *Config) {
 
 	if c.AlgoPrefix == "" {
 		c.AlgoPrefix = defaultAlgoPrefix
