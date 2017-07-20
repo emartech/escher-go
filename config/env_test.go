@@ -1,6 +1,7 @@
 package config_test
 
 import (
+	"reflect"
 	"testing"
 
 	"github.com/EscherAuth/escher/config"
@@ -75,4 +76,35 @@ func TestNewFromENV_EveryValueIsProvidedInEnvVariables(t *testing.T) {
 	assert.Equal(t, "AUTH_HEADER_NAME", config.AuthHeaderName)
 	assert.Equal(t, "DATE_HEADER_NAME", config.DateHeaderName)
 	assert.Equal(t, "CREDENTIAL_SCOPE", config.CredentialScope)
+}
+
+func TestNewFromENV_OneValueAtLeastProvidedInTheENVWithExplicitValueSetting(t *testing.T) {
+	defer UnsetEnvForTheTest(t, "ESCHER_CONFIG")()
+	defer SetEnvForTheTest(t, "ESCHER_CREDENTIAL_SCOPE", "TEST")
+
+	cases := map[string]string{
+		"ESCHER_ALGO_PREFIX":      "AlgoPrefix",
+		"ESCHER_HASH_ALGO":        "HashAlgo",
+		"ESCHER_VENDOR_KEY":       "VendorKey",
+		"ESCHER_AUTH_HEADER_NAME": "AuthHeaderName",
+		"ESCHER_DATE_HEADER_NAME": "DateHeaderName",
+		"ESCHER_CREDENTIAL_SCOPE": "CredentialScope",
+	}
+
+	for envKey, envValue := range cases {
+		tearDown := SetEnvForTheTest(t, envKey, envValue)
+
+		config, err := config.NewFromENV()
+
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		r := reflect.ValueOf(config)
+		actuallyValue := reflect.Indirect(r).FieldByName(envValue).String()
+		assert.Equal(t, envValue, actuallyValue)
+
+		tearDown()
+	}
+
 }
