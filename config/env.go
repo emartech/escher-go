@@ -2,6 +2,7 @@ package config
 
 import (
 	"encoding/json"
+	"errors"
 	"os"
 )
 
@@ -19,6 +20,10 @@ func NewFromENV() (Config, error) {
 	}
 
 	setValuesFromDifferentEnv(&c)
+
+	if c.CredentialScope == "" {
+		return c, errors.New("Credential Scope is missing")
+	}
 
 	SetDefaults(&c)
 

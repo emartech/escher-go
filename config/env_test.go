@@ -80,7 +80,7 @@ func TestNewFromENV_EveryValueIsProvidedInEnvVariables(t *testing.T) {
 
 func TestNewFromENV_OneValueAtLeastProvidedInTheENVWithExplicitValueSetting(t *testing.T) {
 	defer UnsetEnvForTheTest(t, "ESCHER_CONFIG")()
-	defer SetEnvForTheTest(t, "ESCHER_CREDENTIAL_SCOPE", "TEST")
+	defer SetEnvForTheTest(t, "ESCHER_CREDENTIAL_SCOPE", "TEST")()
 
 	cases := map[string]string{
 		"ESCHER_ALGO_PREFIX":      "AlgoPrefix",
@@ -107,4 +107,20 @@ func TestNewFromENV_OneValueAtLeastProvidedInTheENVWithExplicitValueSetting(t *t
 		tearDown()
 	}
 
+}
+
+func TestNewFromENV_InvalidJSONConfig_ErrorReturned(t *testing.T) {
+	defer SetEnvForTheTest(t, "ESCHER_CONFIG", `{credentialScope:"not/valid/json"}`)()
+
+	_, err := config.NewFromENV()
+
+	assert.NotNil(t, err)
+}
+
+func TestNewFromENV_CredentialScopeIsNotGiven_ErrorIsReturned(t *testing.T) {
+	defer UnsetEnvForTheTest(t, "ESCHER_CREDENTIAL_SCOPE")
+
+	_, err := config.NewFromENV()
+
+	assert.Error(t, err, "Credential Scope is missing")
 }
