@@ -35,3 +35,46 @@ go get -u github.com/golang/dep/cmd/dep
 # dep ensure the missing dependency packages
 dep ensure
 ```
+
+ENV configuration
+-----------------
+
+## Configuration
+
+Everything except the Credential scope is optional.
+
+### ESCHER_CONFIG
+
+JSON string that can include the all the configuration parameters:
+* credentialScope
+* vendorKey
+* algoPrefix
+* hashAlgo
+* authHeaderName
+* dateHeaderName
+
+### ESCHER_ALGO_PREFIX
+Set the used Algo prefix when config json not includes it
+
+### ESCHER_HASH_ALGO
+set the hashAlgo when config json not includes it
+
+### ESCHER_VENDOR_KEY
+set the vendorKey when config json not includes it
+
+### ESCHER_AUTH_HEADER_NAME
+set the AUTH_HEADER_name when config json not includes it
+
+### ESCHER_DATE_HEADER_NAME
+set the DATE_HEADER_name when config json not includes it
+
+### ESCHER_CREDENTIAL_SCOPE
+set the credentialScope when config json not includes it
+
+## KeyPool 
+
+### KEY_POOL
+
+JSON serialized array of map that contains credentials with the following keys definitions:
+* keyId
+* secret
