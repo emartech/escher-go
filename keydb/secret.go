@@ -7,5 +7,5 @@ func (kd keydb) GetSecret(keyID string) (string, error) {
 		return "", KeyIDNotFound
 	}
 
-	return secrets[0], nil
+	return secrets[len(secrets)-1], nil
 }

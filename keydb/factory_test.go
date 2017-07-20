@@ -49,6 +49,52 @@ func TestNewFromENV_KeyPoolValueIsEmpty(t *testing.T) {
 
 func TestNewFromENV_KeyPoolHasKeyObjectAndItIsVersioned(t *testing.T) {
 	defer SetEnvForTheTest(t, "KEY_POOL", `[{"keyId":"dpp_ps_v1","secret":"sickrat","acceptOnly":0}]`)()
+
+	keyDB, err := keydb.NewFromENV()
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	secret, err := keyDB.GetSecret("dpp_ps")
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	assert.Equal(t, "sickrat", secret)
+
+}
+
+func TestNewFromENV_KeyPoolHasMultipleVersionedKeyObjectAndLastCanBeReturnedWithGetSecret(t *testing.T) {
+
+	keyPoolString := `[
+		{"keyId":"dpp_ps_v0","secret":"sickrat0","acceptOnly":1},
+		{"keyId":"dpp_ps_v2","secret":"sickrat2","acceptOnly":0},
+		{"keyId":"dpp_ps_v1","secret":"sickrat1","acceptOnly":1}
+	]`
+
+	defer SetEnvForTheTest(t, "KEY_POOL", keyPoolString)()
+
+	keyDB, err := keydb.NewFromENV()
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	secret, err := keyDB.GetSecret("dpp_ps")
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	assert.Equal(t, "sickrat2", secret)
+
+}
+
+func TestNewFromENV_KeyPoolHasKeyObjectWithoutVersioning(t *testing.T) {
+	defer SetEnvForTheTest(t, "KEY_POOL", `[{"keyId":"dpp_ps","secret":"sickrat","acceptOnly":0}]`)()
+
 	keyDB, err := keydb.NewFromENV()
 
 	if err != nil {
