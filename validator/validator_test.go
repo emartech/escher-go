@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/EscherAuth/escher/config"
-	"github.com/EscherAuth/escher/signer"
 	. "github.com/EscherAuth/escher/testing/cases"
 	"github.com/EscherAuth/escher/validator"
 	"github.com/stretchr/testify/assert"
@@ -23,7 +22,6 @@ func isHappyPath(t testing.TB, validatorErr error, c config.Config, testConfig T
 	}
 
 	t.Log("There shouldn't be any error but the following received: " + validatorErr.Error())
-	t.Log("\n" + signer.New(c).canonicalizeRequest(&testConfig.Request, testConfig.HeadersToSign))
 	t.Fail()
 
 	return false
