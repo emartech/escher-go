@@ -17,19 +17,16 @@ func NewFromHTTPRequest(r *http.Request) (*Request, error) {
 	}
 
 	// GetBody
-	bodyIO, err := r.GetBody()
-	if err != nil {
-		return nil, err
-	}
-	defer bodyIO.Close()
-
-	bodyContent, err := ioutil.ReadAll(bodyIO)
+	body, err := ioutil.ReadAll(r.Body)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return New(r.Method, r.URL.String(), headers, string(bodyContent), 0), nil
+	r.Body.Close()
+	r.Body = ioutil.NopCloser(bytes.NewBuffer(body))
+
+	return New(r.Method, r.URL.String(), headers, string(body), 0), nil
 
 }
 
