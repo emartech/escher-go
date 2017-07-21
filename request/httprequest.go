@@ -16,7 +16,6 @@ func NewFromHTTPRequest(r *http.Request) (*Request, error) {
 		}
 	}
 
-	// GetBody
 	body, err := ioutil.ReadAll(r.Body)
 
 	if err != nil {
