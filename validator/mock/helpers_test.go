@@ -19,7 +19,13 @@ func requestBy(t testing.TB, method, path, body string) *request.Request {
 		t.Fatal(err)
 	}
 
-	return request.NewFromHTTPRequest(httpRequest)
+	escherRequest, err := request.NewFromHTTPRequest(httpRequest)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	return escherRequest
 }
 
 func useValidator(t testing.TB, v validator.Validator, request request.Interface, keydb keydb.KeyDB, mandatoryHeaders []string) (string, error) {

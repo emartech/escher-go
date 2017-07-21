@@ -2,6 +2,7 @@ package request
 
 import (
 	"encoding/json"
+	"net/http"
 	"net/url"
 )
 
@@ -14,6 +15,7 @@ type Interface interface {
 	RawURL() string
 	Expires() int
 	Headers() Headers
+	HTTPRequest() (*http.Request, error)
 	json.Unmarshaler
 }
 
