@@ -11,13 +11,9 @@ import (
 
 // Signer is the Escher Signing object interface
 type Signer interface {
-	SignRequest(request.Interface, []string) (*request.Request, error)
-
-	CanonicalizeRequest(request.Interface, []string) string
-	GetStringToSign(request.Interface, []string) string
-	GenerateHeader(request.Interface, []string) string
-	GenerateSignature(request.Interface, []string) string
+	SignRequest(r request.Interface, headersToSign []string) (*request.Request, error)
 	SignedURLBy(httpMethod, urlToSign string, expires int) (string, error)
+	GenerateSignature(r request.Interface, headersToSign []string) string
 }
 
 type signer struct {
@@ -38,7 +34,7 @@ func (s *signer) SignRequest(r request.Interface, headersToSign []string) (*requ
 
 	headers := r.Headers()
 
-	var authHeader = s.GenerateHeader(r, headersToSign)
+	var authHeader = s.generateHeader(r, headersToSign)
 	for _, header := range s.getDefaultHeaders(r) {
 		headers = append(headers, header)
 	}
@@ -51,34 +47,6 @@ func (s *signer) SignRequest(r request.Interface, headersToSign []string) (*requ
 			r.Body(),
 			r.Expires()),
 		nil
-}
-
-func (s *signer) CanonicalizeRequest(r request.Interface, headersToSign []string) string {
-	// TODO: remove this shit
-	var u = parsePathQuery(r.RawURL())
-	parts := make([]string, 0, 6)
-	parts = append(parts, r.Method())
-	parts = append(parts, canonicalizePath(u.Path))
-	parts = append(parts, canonicalizeQuery(u.Query))
-	parts = append(parts, s.canonicalizeHeaders(r, headersToSign))
-	parts = append(parts, s.canonicalizeHeadersToSign(r, headersToSign))
-	parts = append(parts, s.computeDigest(r.Body()))
-	canonicalizedRequest := strings.Join(parts, "\n")
-	return canonicalizedRequest
-}
-
-// TODO: ComposedAlgorithm
-func (s *signer) GenerateHeader(r request.Interface, headersToSign []string) string {
-	return s.config.AlgoPrefix + "-HMAC-" + s.config.HashAlgo + " " +
-		"Credential=" + s.generateCredentials() + ", " +
-		"SignedHeaders=" + s.canonicalizeHeadersToSign(r, headersToSign) + ", " +
-		"Signature=" + s.GenerateSignature(r, headersToSign)
-}
-
-func (s *signer) GenerateSignature(r request.Interface, headersToSign []string) string {
-	var stringToSign = s.GetStringToSign(r, headersToSign)
-	var signingKey = s.calculateSigningKey()
-	return s.calculateSignature(stringToSign, signingKey)
 }
 
 func (s *signer) SignedURLBy(httpMethod, urlToSign string, expires int) (string, error) {
@@ -121,9 +89,9 @@ func (s *signer) SignedURLBy(httpMethod, urlToSign string, expires int) (string,
 	return uri.String(), nil
 }
 
-func (s *signer) GetStringToSign(r request.Interface, headersToSign []string) string {
-	return s.config.AlgoPrefix + "-HMAC-" + s.config.HashAlgo + "\n" +
-		s.config.Date + "\n" +
-		s.config.ShortDate() + "/" + s.config.CredentialScope + "\n" +
-		s.computeDigest(s.CanonicalizeRequest(r, headersToSign))
+// TODO add more test to have explicit tests for this not just implicit
+func (s *signer) GenerateSignature(r request.Interface, headersToSign []string) string {
+	var stringToSign = s.getStringToSign(r, headersToSign)
+	var signingKey = s.calculateSigningKey()
+	return s.calculateSignature(stringToSign, signingKey)
 }

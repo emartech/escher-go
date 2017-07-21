@@ -23,7 +23,7 @@ func isHappyPath(t testing.TB, validatorErr error, c config.Config, testConfig T
 	}
 
 	t.Log("There shouldn't be any error but the following received: " + validatorErr.Error())
-	t.Log("\n" + signer.New(c).CanonicalizeRequest(&testConfig.Request, testConfig.HeadersToSign))
+	t.Log("\n" + signer.New(c).canonicalizeRequest(&testConfig.Request, testConfig.HeadersToSign))
 	t.Fail()
 
 	return false

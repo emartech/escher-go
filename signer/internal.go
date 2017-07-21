@@ -126,3 +126,31 @@ func (s *signer) computeHmacBytes(message string, key []byte) []byte {
 func (s *signer) computeHmac(message string, key []byte) string {
 	return hex.EncodeToString(s.computeHmacBytes(message, key))
 }
+
+func (s *signer) canonicalizeRequest(r request.Interface, headersToSign []string) string {
+	var u = parsePathQuery(r.RawURL())
+	parts := make([]string, 0, 6)
+	parts = append(parts, r.Method())
+	parts = append(parts, canonicalizePath(u.Path))
+	parts = append(parts, canonicalizeQuery(u.Query))
+	parts = append(parts, s.canonicalizeHeaders(r, headersToSign))
+	parts = append(parts, s.canonicalizeHeadersToSign(r, headersToSign))
+	parts = append(parts, s.computeDigest(r.Body()))
+	canonicalizedRequest := strings.Join(parts, "\n")
+	return canonicalizedRequest
+}
+
+// TODO: ComposedAlgorithm
+func (s *signer) generateHeader(r request.Interface, headersToSign []string) string {
+	return s.config.AlgoPrefix + "-HMAC-" + s.config.HashAlgo + " " +
+		"Credential=" + s.generateCredentials() + ", " +
+		"SignedHeaders=" + s.canonicalizeHeadersToSign(r, headersToSign) + ", " +
+		"Signature=" + s.GenerateSignature(r, headersToSign)
+}
+
+func (s *signer) getStringToSign(r request.Interface, headersToSign []string) string {
+	return s.config.AlgoPrefix + "-HMAC-" + s.config.HashAlgo + "\n" +
+		s.config.Date + "\n" +
+		s.config.ShortDate() + "/" + s.config.CredentialScope + "\n" +
+		s.computeDigest(s.canonicalizeRequest(r, headersToSign))
+}

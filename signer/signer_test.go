@@ -1,7 +1,6 @@
 package signer_test
 
 import (
-	"encoding/json"
 	"testing"
 
 	"github.com/EscherAuth/escher/config"
@@ -10,37 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestCanonicalizeRequest(t *testing.T) {
-	t.Log("CanonicalizeRequest should return with a proper string")
-	EachTestConfigFor(t, []string{"signRequest"}, []string{"error"}, func(c config.Config, testConfig TestConfig) bool {
-		canonicalizedRequest := signer.New(c).CanonicalizeRequest(&testConfig.Request, testConfig.HeadersToSign)
-
-		return assert.Equal(t, testConfig.Expected.CanonicalizedRequest, canonicalizedRequest, "canonicalizedRequest should be eq")
-	})
-}
-
-func TestGetStringToSign(t *testing.T) {
-	t.Log("GetStringToSign should return with a proper string")
-	EachTestConfigFor(t, []string{"signRequest"}, []string{"error"}, func(c config.Config, testConfig TestConfig) bool {
-		stringToSign := signer.New(c).GetStringToSign(&testConfig.Request, testConfig.HeadersToSign)
-
-		return assert.Equal(t, stringToSign, testConfig.Expected.StringToSign, "stringToSign expected to eq with the test config expectation")
-	})
-}
-
-func TestGenerateHeader(t *testing.T) {
-	t.Log("GenerateHeader should return with a proper string")
-	EachTestConfigFor(t, []string{"signRequest"}, []string{}, func(c config.Config, testConfig TestConfig) bool {
-		if testConfig.Expected.AuthHeader == "" {
-			return false
-		}
-
-		authHeader := signer.New(c).GenerateHeader(&testConfig.Request, testConfig.HeadersToSign)
-		return assert.Equal(t, testConfig.Expected.AuthHeader, authHeader, "authHeader generation failed")
-	})
-}
-
-func TestSignRequestHappyPath(t *testing.T) {
+func TestSignRequest_RequestIsValid_SignedRequestReturned(t *testing.T) {
 	t.Log("SignRequest should return with a properly signed request")
 	EachTestConfigFor(t, []string{"signRequest"}, []string{"error"}, func(c config.Config, testConfig TestConfig) bool {
 		signedRequest, err := signer.New(c).SignRequest(&testConfig.Request, testConfig.HeadersToSign)
@@ -57,7 +26,7 @@ func TestSignRequestHappyPath(t *testing.T) {
 	})
 }
 
-func TestSignRequestError(t *testing.T) {
+func TestSignRequest_ErrorOnSigning_ErrorReturnedThatTellsTheProblem(t *testing.T) {
 	t.Log("SignRequest should return error about what was wrong with the given request to sign")
 	EachTestConfigFor(t, []string{"signRequest", "error"}, []string{}, func(c config.Config, testConfig TestConfig) bool {
 		_, err := signer.New(c).SignRequest(&testConfig.Request, testConfig.HeadersToSign)
@@ -79,12 +48,4 @@ func TestSignedURLBy(t *testing.T) {
 
 		return assert.Equal(t, testConfig.Expected.URL, signedURLStr)
 	})
-}
-
-func escapeToJSONStringFormat(s string) string {
-	bs, err := json.Marshal(s)
-	if err != nil {
-		panic(err)
-	}
-	return string(bs)
 }
