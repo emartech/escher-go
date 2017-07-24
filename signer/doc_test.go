@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/EscherAuth/escher/config"
-	"github.com/EscherAuth/escher/keydb"
 	"github.com/EscherAuth/escher/request"
 	"github.com/EscherAuth/escher/signer"
 )
@@ -13,12 +12,6 @@ import (
 func ExampleSigner() error {
 
 	Config, err := config.NewFromENV()
-
-	if err != nil {
-		return err
-	}
-
-	keyDB, err := keydb.NewFromENV()
 
 	if err != nil {
 		return err
@@ -48,5 +41,7 @@ func ExampleSigner() error {
 	resp, _ := client.Do(signedHTTPRequest)
 
 	log.Println(resp)
+
+	return nil
 
 }
