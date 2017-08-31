@@ -1,11 +1,16 @@
 package config
 
 import (
+	"encoding/json"
 	"time"
 
 	"github.com/EscherAuth/escher/request"
 	"github.com/EscherAuth/escher/utils"
 )
+
+type Interface interface {
+	json.Unmarshaler
+}
 
 type Config struct {
 	Date            string
