@@ -17,6 +17,7 @@ type Interface interface {
 	Headers() Headers
 	HTTPRequest() (*http.Request, error)
 	json.Unmarshaler
+	json.Marshaler
 }
 
 type Request struct {

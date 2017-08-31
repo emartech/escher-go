@@ -22,6 +22,17 @@ func (r *Request) UnmarshalJSON(data []byte) error {
 	return mapJSONContentToRequest(r, data)
 }
 
+func (r *Request) MarshalJSON() ([]byte, error) {
+	j := &jsonMapper{
+		URL:     r.url,
+		Body:    r.body,
+		Method:  r.method,
+		Expires: r.expires,
+		Headers: r.headers,
+	}
+	return json.Marshal(j)
+}
+
 func mapJSONContentToRequest(r *Request, data []byte) error {
 	var j jsonMapper
 	err := json.Unmarshal(data, &j)
