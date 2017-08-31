@@ -27,3 +27,7 @@ func NewFromENV() (KeyDB, error) {
 
 	return parseFromKeyPool(jsonString)
 }
+
+func NewFromJSON(jsonKeyPool string) (KeyDB, error) {
+	return parseFromKeyPool(jsonKeyPool)
+}

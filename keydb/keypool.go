@@ -2,11 +2,9 @@ package keydb
 
 import (
 	"encoding/json"
-	"fmt"
 	"regexp"
 	"sort"
 	"strconv"
-	"strings"
 )
 
 type keyObject struct {
@@ -24,11 +22,11 @@ func (a byVersion) Less(i, j int) bool { return a[i].Version() < a[j].Version() 
 var versionMatcher = regexp.MustCompile(`\d+$`)
 
 func (ko keyObject) KeyID() string {
-	if versionMatcher.MatchString(ko.RawKeyID) {
-		versionSuffix := fmt.Sprintf("_v%v", ko.Version())
+	// if versionMatcher.MatchString(ko.RawKeyID) {
+	// 	versionSuffix := fmt.Sprintf("_v%v", ko.Version())
 
-		return strings.TrimSuffix(ko.RawKeyID, versionSuffix)
-	}
+	// 	return strings.TrimSuffix(ko.RawKeyID, versionSuffix)
+	// }
 
 	return ko.RawKeyID
 }
