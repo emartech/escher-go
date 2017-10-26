@@ -13,4 +13,4 @@ git checkout -- .
 git pull
 cd $testCaseRepoCloneDirector
 
-export TEST_CASES_PATH="$testCaseDirectoryPath"
+export ESCHER_TEST_CASES_PATH="$testCaseDirectoryPath"
