@@ -37,6 +37,27 @@ func TestNewFromHTTPRequest(t *testing.T) {
 
 }
 
+func TestNewFromHTTPRequest_HTTPRequestIncludesSchemaAndOtherImportantParameters_OnlyPathIsUsed(t *testing.T) {
+	t.Parallel()
+
+	httpRequest, err := http.NewRequest("GET", "https://example.org/?k=p", nil)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	escherReqest, err := request.NewFromHTTPRequest(httpRequest)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	assert.Equal(t, escherReqest.Path(), "/")
+	assert.Equal(t, escherReqest.RawURL(), "/?k=p")
+	assert.Equal(t, request.Query{[2]string{"k", "p"}}, escherReqest.Query())
+
+}
+
 func TestNewFromHTTPRequest_TheRequestBodyIsNil_EmptyStringUsed(t *testing.T) {
 	t.Parallel()
 

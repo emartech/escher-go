@@ -23,7 +23,7 @@ func NewFromHTTPRequest(r *http.Request) (*Request, error) {
 		return nil, err
 	}
 
-	return New(r.Method, r.URL.String(), headers, body, 0), nil
+	return New(r.Method, r.URL.RequestURI(), headers, body, 0), nil
 
 }
 

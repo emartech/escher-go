@@ -35,6 +35,7 @@ func mergeHTTPHeaders(s *Request, d *http.Request) {
 
 func mergeURLPath(s *url.URL, d *url.URL) {
 	d.Path = s.Path
+	d.Opaque = s.Opaque
 	d.RawPath = s.RawPath
 	d.RawQuery = s.RawQuery
 }
