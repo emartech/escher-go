@@ -15,7 +15,7 @@ func TestUpdateHTTPRequest(t *testing.T) {
 
 	cases.EachTestConfigFor(t, []string{"signrequest", "post", "payload", "utf8"}, nil, func(c config.Config, tc cases.TestConfig) bool {
 
-		HTTPRequestToUpdate, err := tc.Request.HTTPRequest()
+		HTTPRequestToUpdate, err := tc.Request.HTTPRequest("http://example.org:8080")
 
 		if err != nil {
 			t.Fatal(err)

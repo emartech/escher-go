@@ -95,26 +95,34 @@ func TestNewFromHTTPRequest_EscherRequestMade_HTTPBodyStillContainsValueLikeItIs
 func TestHTTPRequest(t *testing.T) {
 	t.Parallel()
 
-	bodyIO := bytes.NewBuffer([]byte("Hello you awesome!"))
-	expectedHTTPRequest, err := http.NewRequest("GET", "/?k=p", bodyIO)
+	newBodyIO := func() *bytes.Buffer { return bytes.NewBuffer([]byte("Hello you awesome!")) }
+	originalHTTPRequest, err := http.NewRequest("GET", "/?k=p", newBodyIO())
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	originalHTTPRequest.Header.Set("X-Testing", "OK")
+
+	escherReqest, err := request.NewFromHTTPRequest(originalHTTPRequest)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	actuallyHTTPRequest, err := escherReqest.HTTPRequest("http://www.example.com")
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	expectedHTTPRequest, err := http.NewRequest("GET", "http://www.example.com/?k=p", newBodyIO())
 
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	expectedHTTPRequest.Header.Set("X-Testing", "OK")
-
-	escherReqest, err := request.NewFromHTTPRequest(expectedHTTPRequest)
-
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	actuallyHTTPRequest, err := escherReqest.HTTPRequest()
-
-	if err != nil {
-		t.Fatal(err)
-	}
 
 	assert.Equal(t, expectedHTTPRequest.Method, actuallyHTTPRequest.Method)
 	assert.Equal(t, expectedHTTPRequest.URL, actuallyHTTPRequest.URL)

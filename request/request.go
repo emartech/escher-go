@@ -15,7 +15,7 @@ type Interface interface {
 	RawURL() string
 	Expires() int
 	Headers() Headers
-	HTTPRequest() (*http.Request, error)
+	HTTPRequest(string) (*http.Request, error)
 	json.Unmarshaler
 	json.Marshaler
 }

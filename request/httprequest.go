@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 )
 
 func NewFromHTTPRequest(r *http.Request) (*Request, error) {
@@ -50,9 +51,26 @@ func bodyStringFrom(r *http.Request) (string, error) {
 
 }
 
-func (r *Request) HTTPRequest() (*http.Request, error) {
+func (r *Request) HTTPRequest(baseURL string) (*http.Request, error) {
+
+	u, err := url.Parse(baseURL)
+
+	if err != nil {
+		return nil, err
+	}
+
+	rURL, err := r.URL()
+
+	if err != nil {
+		return nil, err
+	}
+
+	u.Path = rURL.Path
+	u.RawPath = rURL.RawPath
+	u.RawQuery = rURL.RawQuery
+
 	bodyIO := bytes.NewBuffer([]byte(r.body))
-	httpRequest, err := http.NewRequest(r.method, r.url, bodyIO)
+	httpRequest, err := http.NewRequest(r.method, u.String(), bodyIO)
 
 	if err != nil {
 		return httpRequest, err

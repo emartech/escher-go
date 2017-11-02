@@ -31,14 +31,14 @@ func ExampleSigner() error {
 		return err
 	}
 
-	signedHTTPRequest, err := signedRequest.HTTPRequest()
+	err = signedRequest.UpdateHTTPRequest(req)
 
 	if err != nil {
 		return err
 	}
 
 	client := &http.Client{}
-	resp, _ := client.Do(signedHTTPRequest)
+	resp, _ := client.Do(req)
 
 	log.Println(resp)
 
