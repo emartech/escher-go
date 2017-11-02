@@ -27,26 +27,6 @@ func NewFromHTTPRequest(r *http.Request) (*Request, error) {
 
 }
 
-func bodyStringFrom(r *http.Request) (string, error) {
-
-	if r.Body == nil {
-		return "", nil
-	}
-
-	body, err := ioutil.ReadAll(r.Body)
-
-	if err != nil {
-		return "", err
-	}
-
-	defer r.Body.Close()
-
-	r.Body = ioutil.NopCloser(bytes.NewBuffer(body))
-
-	return string(body), nil
-
-}
-
 func (r *Request) HTTPRequest(baseURL string) (*http.Request, error) {
 
 	u, err := url.Parse(baseURL)
@@ -78,4 +58,24 @@ func (r *Request) HTTPRequest(baseURL string) (*http.Request, error) {
 	}
 
 	return httpRequest, nil
+}
+
+func bodyStringFrom(r *http.Request) (string, error) {
+
+	if r.Body == nil {
+		return "", nil
+	}
+
+	body, err := ioutil.ReadAll(r.Body)
+
+	if err != nil {
+		return "", err
+	}
+
+	defer r.Body.Close()
+
+	r.Body = ioutil.NopCloser(bytes.NewBuffer(body))
+
+	return string(body), nil
+
 }
