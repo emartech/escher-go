@@ -1,10 +1,20 @@
 package request
 
 import "net/http"
+import "net/url"
 
 func (ereq *Request) UpdateHTTPRequest(req *http.Request) error {
 	mergeHTTPHeaders(ereq, req)
-	return mergeHTTPURL(ereq, req)
+
+	sURL, err := ereq.URL()
+
+	if err != nil {
+		return err
+	}
+
+	mergeURLPath(sURL, req.URL)
+
+	return nil
 }
 
 func mergeHTTPHeaders(s *Request, d *http.Request) {
@@ -23,14 +33,8 @@ func mergeHTTPHeaders(s *Request, d *http.Request) {
 	d.Header = Header
 }
 
-func mergeHTTPURL(s *Request, d *http.Request) error {
-	sURL, err := s.URL()
-
-	if err != nil {
-		return err
-	}
-
-	d.URL = sURL
-
-	return nil
+func mergeURLPath(s *url.URL, d *url.URL) {
+	d.Path = s.Path
+	d.RawPath = s.RawPath
+	d.RawQuery = s.RawQuery
 }

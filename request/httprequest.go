@@ -65,9 +65,7 @@ func (r *Request) HTTPRequest(baseURL string) (*http.Request, error) {
 		return nil, err
 	}
 
-	u.Path = rURL.Path
-	u.RawPath = rURL.RawPath
-	u.RawQuery = rURL.RawQuery
+	mergeURLPath(rURL, u)
 
 	bodyIO := bytes.NewBuffer([]byte(r.body))
 	httpRequest, err := http.NewRequest(r.method, u.String(), bodyIO)

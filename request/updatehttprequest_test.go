@@ -33,8 +33,7 @@ func TestUpdateHTTPRequest(t *testing.T) {
 			t.Fatal(mergeErr)
 		}
 
-		erURL, _ := SignedRequest.URL()
-		assert.Equal(t, erURL, HTTPRequestToUpdate.URL)
+		assert.Equal(t, "http://example.org:8080/", HTTPRequestToUpdate.URL.String())
 
 		for _, KeyValues := range SignedRequest.Headers() {
 			assert.Equal(t, KeyValues[1], HTTPRequestToUpdate.Header.Get(KeyValues[0]))
