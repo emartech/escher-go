@@ -74,4 +74,14 @@ func setValuesFromDifferentEnv(c *Config) {
 		c.CredentialScope = credentialScope
 	}
 
+	ApiSecret, isGiven := os.LookupEnv("ESCHER_API_SECRET")
+	if isGiven && c.ApiSecret == "" {
+		c.ApiSecret = ApiSecret
+	}
+
+	AccessKeyId, isGiven := os.LookupEnv("ESCHER_ACCESS_KEY_ID")
+	if isGiven && c.AccessKeyId == "" {
+		c.AccessKeyId = AccessKeyId
+	}
+
 }

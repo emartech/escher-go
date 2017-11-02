@@ -89,6 +89,8 @@ func TestNewFromENV_OneValueAtLeastProvidedInTheENVWithExplicitValueSetting(t *t
 		"ESCHER_AUTH_HEADER_NAME": "AuthHeaderName",
 		"ESCHER_DATE_HEADER_NAME": "DateHeaderName",
 		"ESCHER_CREDENTIAL_SCOPE": "CredentialScope",
+		"ESCHER_API_SECRET":       "ApiSecret",
+		"ESCHER_ACCESS_KEY_ID":    "AccessKeyId",
 	}
 
 	for envKey, envValue := range cases {
