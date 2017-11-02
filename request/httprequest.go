@@ -2,6 +2,7 @@ package request
 
 import (
 	"bytes"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 )
@@ -16,16 +17,36 @@ func NewFromHTTPRequest(r *http.Request) (*Request, error) {
 		}
 	}
 
-	body, err := ioutil.ReadAll(r.Body)
+	fmt.Println(r.Header)
+	fmt.Println(headers)
+
+	body, err := bodyStringFrom(r)
 
 	if err != nil {
 		return nil, err
 	}
 
-	r.Body.Close()
+	return New(r.Method, r.URL.String(), headers, body, 0), nil
+
+}
+
+func bodyStringFrom(r *http.Request) (string, error) {
+
+	if r.Body == nil {
+		return "", nil
+	}
+
+	body, err := ioutil.ReadAll(r.Body)
+
+	if err != nil {
+		return "", err
+	}
+
+	defer r.Body.Close()
+
 	r.Body = ioutil.NopCloser(bytes.NewBuffer(body))
 
-	return New(r.Method, r.URL.String(), headers, string(body), 0), nil
+	return string(body), nil
 
 }
 

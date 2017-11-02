@@ -37,6 +37,31 @@ func TestNewFromHTTPRequest(t *testing.T) {
 
 }
 
+func TestNewFromHTTPRequest_TheRequestBodyIsNil_EmptyStringUsed(t *testing.T) {
+	t.Parallel()
+
+	httpRequest, err := http.NewRequest("GET", "/?k=p", nil)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	escherReqest, err := request.NewFromHTTPRequest(httpRequest)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	assert.Equal(t, escherReqest.Path(), "/")
+	assert.Equal(t, escherReqest.Body(), "")
+	assert.Equal(t, escherReqest.Method(), "GET")
+	assert.Equal(t, escherReqest.RawURL(), "/?k=p")
+	assert.Equal(t, escherReqest.Expires(), 0)
+	assert.Equal(t, request.Query{[2]string{"k", "p"}}, escherReqest.Query())
+	assert.Equal(t, request.Headers{}, escherReqest.Headers())
+
+}
+
 func TestNewFromHTTPRequest_EscherRequestMade_HTTPBodyStillContainsValueLikeItIsUnTouched(t *testing.T) {
 	t.Parallel()
 
