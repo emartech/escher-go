@@ -118,7 +118,7 @@ func TestNewFromENV_InvalidJSONConfig_ErrorReturned(t *testing.T) {
 }
 
 func TestNewFromENV_CredentialScopeIsNotGiven_ErrorIsReturned(t *testing.T) {
-	defer UnsetEnvForTheTest(t, "ESCHER_CREDENTIAL_SCOPE")
+	defer UnsetEnvForTheTest(t, "ESCHER_CREDENTIAL_SCOPE")()
 
 	_, err := config.NewFromENV()
 
