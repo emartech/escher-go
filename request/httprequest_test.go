@@ -8,6 +8,7 @@ import (
 
 	"github.com/EscherAuth/escher/request"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestNewFromHTTPRequest(t *testing.T) {
@@ -33,7 +34,7 @@ func TestNewFromHTTPRequest(t *testing.T) {
 	assert.Equal(t, escherReqest.RawURL(), "/?k=p")
 	assert.Equal(t, escherReqest.Expires(), 0)
 	assert.Equal(t, request.Query{[2]string{"k", "p"}}, escherReqest.Query())
-	assert.Equal(t, request.Headers{[2]string{"X-Testing", "OK"}}, escherReqest.Headers())
+	assert.Equal(t, request.Headers{[2]string{"X-Testing", "OK"}, [2]string{"host", ""}}, escherReqest.Headers())
 
 }
 
@@ -54,6 +55,52 @@ func TestNewFromHTTPRequest_HTTPRequestIncludesSchemaAndOtherImportantParameters
 
 	assert.Equal(t, escherReqest.Path(), "/")
 	assert.Equal(t, escherReqest.RawURL(), "/?k=p")
+
+}
+
+func TestNewFromHTTPRequest_HostHeaderIsProvided_HostHeaderNotProvidedByTheURL(t *testing.T) {
+	t.Parallel()
+
+	httpRequest, err := http.NewRequest("GET", "https://example.org/?k=p", nil)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	httpRequest.Header.Set("Host", "example.com")
+
+	escherReqest, err := request.NewFromHTTPRequest(httpRequest)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	actuallyHost, isGiven := escherReqest.Headers().Get("host")
+
+	require.True(t, isGiven)
+	assert.Equal(t, "example.com", actuallyHost)
+
+}
+
+func TestNewFromHTTPRequest_HostHeaderNotProvided_HostValueextractedFromTheURL(t *testing.T) {
+	t.Parallel()
+
+	httpRequest, err := http.NewRequest("GET", "https://example.org/?k=p", nil)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	escherReqest, err := request.NewFromHTTPRequest(httpRequest)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	actuallyHost, isGiven := escherReqest.Headers().Get("host")
+
+	require.True(t, isGiven)
+	assert.Equal(t, "example.org", actuallyHost)
 	assert.Equal(t, request.Query{[2]string{"k", "p"}}, escherReqest.Query())
 
 }
@@ -79,7 +126,7 @@ func TestNewFromHTTPRequest_TheRequestBodyIsNil_EmptyStringUsed(t *testing.T) {
 	assert.Equal(t, escherReqest.RawURL(), "/?k=p")
 	assert.Equal(t, escherReqest.Expires(), 0)
 	assert.Equal(t, request.Query{[2]string{"k", "p"}}, escherReqest.Query())
-	assert.Equal(t, request.Headers{}, escherReqest.Headers())
+	assert.Equal(t, request.Headers{[2]string{"host", ""}}, escherReqest.Headers())
 
 }
 
@@ -117,15 +164,20 @@ func TestHTTPRequest(t *testing.T) {
 	t.Parallel()
 
 	newBodyIO := func() *bytes.Buffer { return bytes.NewBuffer([]byte("Hello you awesome!")) }
-	originalHTTPRequest, err := http.NewRequest("GET", "/?k=p", newBodyIO())
 
-	if err != nil {
-		t.Fatal(err)
+	createHTTPRequest := func() *http.Request {
+		req, err := http.NewRequest("GET", "http://www.example.com/?k=p", newBodyIO())
+
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		req.Header.Set("X-Testing", "OK")
+
+		return req
 	}
 
-	originalHTTPRequest.Header.Set("X-Testing", "OK")
-
-	escherReqest, err := request.NewFromHTTPRequest(originalHTTPRequest)
+	escherReqest, err := request.NewFromHTTPRequest(createHTTPRequest())
 
 	if err != nil {
 		t.Fatal(err)
@@ -137,13 +189,8 @@ func TestHTTPRequest(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	expectedHTTPRequest, err := http.NewRequest("GET", "http://www.example.com/?k=p", newBodyIO())
-
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	expectedHTTPRequest.Header.Set("X-Testing", "OK")
+	expectedHTTPRequest := createHTTPRequest()
+	expectedHTTPRequest.Header.Set("host", "www.example.com")
 
 	assert.Equal(t, expectedHTTPRequest.Method, actuallyHTTPRequest.Method)
 	assert.Equal(t, expectedHTTPRequest.URL, actuallyHTTPRequest.URL)

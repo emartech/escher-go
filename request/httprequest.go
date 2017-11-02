@@ -9,21 +9,13 @@ import (
 
 func NewFromHTTPRequest(r *http.Request) (*Request, error) {
 
-	headers := Headers{}
-
-	for key, values := range r.Header {
-		for _, value := range values {
-			headers = append(headers, [2]string{key, value})
-		}
-	}
-
 	body, err := bodyStringFrom(r)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return New(r.Method, r.URL.RequestURI(), headers, body, 0), nil
+	return New(r.Method, r.URL.RequestURI(), createEscherHeadersFromHTTPHeaders(r), body, 0), nil
 
 }
 
@@ -43,8 +35,7 @@ func (r *Request) HTTPRequest(baseURL string) (*http.Request, error) {
 
 	mergeURLPath(rURL, u)
 
-	bodyIO := bytes.NewBuffer([]byte(r.body))
-	httpRequest, err := http.NewRequest(r.method, u.String(), bodyIO)
+	httpRequest, err := http.NewRequest(r.method, u.String(), bytes.NewBuffer([]byte(r.body)))
 
 	if err != nil {
 		return httpRequest, err
@@ -78,4 +69,21 @@ func bodyStringFrom(r *http.Request) (string, error) {
 
 	return string(body), nil
 
+}
+
+func createEscherHeadersFromHTTPHeaders(r *http.Request) Headers {
+	headers := Headers{}
+
+	for key, values := range r.Header {
+		for _, value := range values {
+			headers = append(headers, [2]string{key, value})
+		}
+	}
+
+	if r.Header.Get("host") == "" {
+		// https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.23
+		headers = append(headers, [2]string{"host", r.URL.Host})
+	}
+
+	return headers
 }
