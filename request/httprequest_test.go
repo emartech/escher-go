@@ -11,6 +11,7 @@ import (
 )
 
 func TestNewFromHTTPRequest(t *testing.T) {
+	t.Parallel()
 
 	httpRequest, err := http.NewRequest("GET", "/?k=p", bytes.NewBuffer([]byte("Hello, World!")))
 
@@ -37,6 +38,7 @@ func TestNewFromHTTPRequest(t *testing.T) {
 }
 
 func TestNewFromHTTPRequest_EscherRequestMade_HTTPBodyStillContainsValueLikeItIsUnTouched(t *testing.T) {
+	t.Parallel()
 
 	expectedBodyString := "Hello, World!"
 	httpRequest, err := http.NewRequest("GET", "/?k=p", bytes.NewBuffer([]byte(expectedBodyString)))
@@ -66,6 +68,7 @@ func TestNewFromHTTPRequest_EscherRequestMade_HTTPBodyStillContainsValueLikeItIs
 }
 
 func TestHTTPRequest(t *testing.T) {
+	t.Parallel()
 
 	bodyIO := bytes.NewBuffer([]byte("Hello you awesome!"))
 	expectedHTTPRequest, err := http.NewRequest("GET", "/?k=p", bodyIO)
