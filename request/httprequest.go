@@ -2,7 +2,6 @@ package request
 
 import (
 	"bytes"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -17,9 +16,6 @@ func NewFromHTTPRequest(r *http.Request) (*Request, error) {
 			headers = append(headers, [2]string{key, value})
 		}
 	}
-
-	fmt.Println(r.Header)
-	fmt.Println(headers)
 
 	body, err := bodyStringFrom(r)
 
