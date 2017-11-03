@@ -25,7 +25,13 @@ type Config struct {
 }
 
 func (c Config) ShortDate() string {
-	return c.Date[:8]
+	date, err := c.DateInEscherFormat()
+
+	if err != nil {
+		return ""
+	}
+
+	return date[:8]
 }
 
 func (c Config) Reconfig(date, hashAlgo, credentialScope, apiKeyID, apiSecret string) Config {
