@@ -32,7 +32,7 @@ func TestNewFromHTTPRequest(t *testing.T) {
 	assert.Equal(t, escherReqest.Body(), "Hello, World!")
 	assert.Equal(t, escherReqest.Method(), "GET")
 	assert.Equal(t, escherReqest.RawURL(), "/?k=p")
-	assert.Equal(t, escherReqest.Expires(), 0)
+	assert.Equal(t, escherReqest.Expires(), 36000)
 	assert.Equal(t, request.Query{[2]string{"k", "p"}}, escherReqest.Query())
 	assert.Equal(t, request.Headers{[2]string{"X-Testing", "OK"}, [2]string{"host", ""}}, escherReqest.Headers())
 
@@ -124,7 +124,7 @@ func TestNewFromHTTPRequest_TheRequestBodyIsNil_EmptyStringUsed(t *testing.T) {
 	assert.Equal(t, escherReqest.Body(), "")
 	assert.Equal(t, escherReqest.Method(), "GET")
 	assert.Equal(t, escherReqest.RawURL(), "/?k=p")
-	assert.Equal(t, escherReqest.Expires(), 0)
+	assert.Equal(t, escherReqest.Expires(), 36000)
 	assert.Equal(t, request.Query{[2]string{"k", "p"}}, escherReqest.Query())
 	assert.Equal(t, request.Headers{[2]string{"host", ""}}, escherReqest.Headers())
 

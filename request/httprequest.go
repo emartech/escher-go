@@ -15,7 +15,7 @@ func NewFromHTTPRequest(r *http.Request) (*Request, error) {
 		return nil, err
 	}
 
-	return New(r.Method, r.URL.RequestURI(), createEscherHeadersFromHTTPHeaders(r), body, 0), nil
+	return New(r.Method, r.URL.RequestURI(), createEscherHeadersFromHTTPHeaders(r), body, 36000), nil
 
 }
 
