@@ -265,7 +265,7 @@ func (v *validator) Time() time.Time {
 		return t
 	}
 
-	return time.Now()
+	return time.Now().UTC()
 }
 
 func (v *validator) bodyForSignatureGeneration(r request.Interface) string {
