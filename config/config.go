@@ -2,6 +2,7 @@ package config
 
 import (
 	"encoding/json"
+	"strings"
 	"time"
 
 	"github.com/EscherAuth/escher/request"
@@ -57,7 +58,13 @@ func (c Config) DateInEscherFormat() (string, error) {
 }
 
 func (c Config) DateInHTTPHeaderFormat() (string, error) {
-	return c.GetDateWithFormat(utils.HTTPHeaderFormat)
+	rawDateString, err := c.GetDateWithFormat(utils.HTTPHeaderFormat)
+
+	if err != nil {
+		return rawDateString, err
+	}
+
+	return strings.Replace(rawDateString, "UTC", "GMT", 1), nil
 }
 
 func (c Config) GetDateWithFormat(format string) (string, error) {

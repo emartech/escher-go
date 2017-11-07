@@ -1,6 +1,7 @@
 package utils_test
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
@@ -10,15 +11,19 @@ import (
 
 func TestParseTimeValidTimeStringGiven(t *testing.T) {
 
-	referenceTime, err := time.Parse(time.UnixDate, "Mon Jan 2 15:04:05 UTC 2006")
+	// referenceTime, _ := time.Parse(time.RFC3339Nano, time.RFC3339Nano)
+	referenceTime := time.Now()
 
-	if err != nil {
-		t.Fatal(err)
-	}
+	fmt.Println(time.Now().Format("20060102T150405Z07"))
 
+	return
 	supportedFormats := []string{
-		"20060102T150405Z",
-		"Fri, 02 Jan 2006 15:04:05 GMT",
+		"20060102T150405Z07",
+		"20060102T150405Z0700",
+		"20060102T150405Z07:00",
+		"20060102T150405Z070000",
+		"20060102T150405Z07:00:00",
+		"Fri, 02 Jan 2006 15:04:05 MST",
 		time.ANSIC,
 		time.UnixDate,
 		time.RubyDate,
@@ -38,6 +43,7 @@ func TestParseTimeValidTimeStringGiven(t *testing.T) {
 
 	for _, format := range supportedFormats {
 		timeString := referenceTime.Format(format)
+
 		expectedTime, _ := time.Parse(format, timeString)
 		actuallyTime, err := utils.ParseTime(timeString)
 

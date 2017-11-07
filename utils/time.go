@@ -5,11 +5,15 @@ import (
 	"time"
 )
 
-const EscherDateFormat = "20060102T150405Z"
-const HTTPHeaderFormat = "Fri, 02 Jan 2006 15:04:05 GMT"
+const EscherDateFormat = "20060102T150405Z07"
+const HTTPHeaderFormat = "Fri, 02 Jan 2006 15:04:05 MST"
 
 var acceptedTimeFormats = []string{
 	EscherDateFormat,
+	"20060102T150405Z0700",
+	"20060102T150405Z07:00",
+	"20060102T150405Z070000",
+	"20060102T150405Z07:00:00",
 	HTTPHeaderFormat,
 	time.ANSIC,
 	time.UnixDate,
