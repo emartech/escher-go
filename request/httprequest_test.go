@@ -86,6 +86,7 @@ func TestNewFromHTTPRequest_HostHeaderNotProvided_HostValueextractedFromTheURL(t
 	t.Parallel()
 
 	httpRequest, err := http.NewRequest("GET", "https://example.org/?k=p", nil)
+	httpRequest.URL.Host = "" // to enforce the use oh Host property
 
 	if err != nil {
 		t.Fatal(err)

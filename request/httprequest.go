@@ -2,6 +2,7 @@ package request
 
 import (
 	"bytes"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -74,6 +75,9 @@ func bodyStringFrom(r *http.Request) (string, error) {
 func createEscherHeadersFromHTTPHeaders(r *http.Request) Headers {
 	headers := Headers{}
 
+	fmt.Println(r.Header)
+	fmt.Println(r.Host)
+
 	for key, values := range r.Header {
 		for _, value := range values {
 			headers = append(headers, [2]string{key, value})
@@ -82,7 +86,7 @@ func createEscherHeadersFromHTTPHeaders(r *http.Request) Headers {
 
 	if r.Header.Get("host") == "" {
 		// https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.23
-		headers = append(headers, [2]string{"host", r.URL.Host})
+		headers = append(headers, [2]string{"host", r.Host})
 	}
 
 	return headers
