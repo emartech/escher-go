@@ -17,9 +17,9 @@ func (s *signer) getDefaultHeaders(r request.Interface) request.Headers {
 	if !hasHeader(s.config.DateHeaderName, headers) && !s.config.IsSigningInQuery(r) {
 		var dateHeader string
 		if strings.ToLower(s.config.DateHeaderName) == "date" {
-			dateHeader, _ = s.config.DateInHTTPHeaderFormat()
+			dateHeader = s.config.DateInHTTPHeaderFormat()
 		} else {
-			dateHeader, _ = s.config.DateInEscherFormat()
+			dateHeader = s.config.DateInEscherFormat()
 		}
 
 		newHeaders = append(newHeaders, [2]string{s.config.DateHeaderName, dateHeader})
@@ -150,7 +150,7 @@ func (s *signer) generateHeader(r request.Interface, headersToSign []string) str
 
 func (s *signer) getStringToSign(r request.Interface, headersToSign []string) string {
 	return s.config.AlgoPrefix + "-HMAC-" + s.config.HashAlgo + "\n" +
-		s.config.Date + "\n" +
+		s.config.DateInEscherFormat() + "\n" +
 		s.config.ShortDate() + "/" + s.config.CredentialScope + "\n" +
 		s.computeDigest(s.canonicalizeRequest(r, headersToSign))
 }

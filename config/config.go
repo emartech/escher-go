@@ -2,6 +2,7 @@ package config
 
 import (
 	"encoding/json"
+	"log"
 	"strings"
 	"time"
 
@@ -26,9 +27,9 @@ type Config struct {
 }
 
 func (c Config) ShortDate() string {
-	date, err := c.DateInEscherFormat()
+	date := c.DateInEscherFormat()
 
-	if err != nil {
+	if date == "" {
 		return ""
 	}
 
@@ -53,33 +54,29 @@ func (c Config) ComposedAlgorithm() string {
 	return c.GetAlgoPrefix() + "-HMAC-" + c.GetHashAlgo()
 }
 
-func (c Config) DateInEscherFormat() (string, error) {
+func (c Config) DateInEscherFormat() string {
 	return c.GetDateWithFormat(utils.EscherDateFormat)
 }
 
-func (c Config) DateInHTTPHeaderFormat() (string, error) {
-	rawDateString, err := c.GetDateWithFormat(utils.HTTPHeaderFormat)
-
-	if err != nil {
-		return rawDateString, err
-	}
-
-	return strings.Replace(rawDateString, "UTC", "GMT", 1), nil
+func (c Config) DateInHTTPHeaderFormat() string {
+	return strings.Replace(c.GetDateWithFormat(utils.HTTPHeaderFormat), "UTC", "GMT", 1)
 }
 
-func (c Config) GetDateWithFormat(format string) (string, error) {
+func (c Config) GetDateWithFormat(format string) string {
 
 	if c.Date == "" {
-		return time.Now().Format(format), nil
+		return time.Now().Format(format)
 	}
 
 	t, err := utils.ParseTime(c.Date)
 
 	if err != nil {
-		return "", err
+		log.Println("WARNING: malformed date string given, fallback to current time")
+
+		return time.Now().Format(format)
 	}
 
-	return t.Format(format), nil
+	return t.Format(format)
 
 }
 

@@ -56,19 +56,13 @@ func (s *signer) SignedURLBy(httpMethod, urlToSign string, expires int) (string,
 		return "", err
 	}
 
-	date, err := s.config.DateInEscherFormat()
-
-	if err != nil {
-		return "", err
-	}
-
 	headers := [][2]string{[2]string{"host", uri.Host}}
 	headersToSign := []string{"host"}
 
 	values := url.Values{}
 	values.Add(s.config.QueryKeyFor("Algorithm"), s.config.ComposedAlgorithm())
 	values.Add(s.config.QueryKeyFor("Credentials"), s.generateCredentials())
-	values.Add(s.config.QueryKeyFor("Date"), date)
+	values.Add(s.config.QueryKeyFor("Date"), s.config.DateInEscherFormat())
 	values.Add(s.config.QueryKeyFor("Expires"), strconv.Itoa(expires))
 	values.Add(s.config.QueryKeyFor("SignedHeaders"), strings.Join(headersToSign, ";"))
 
