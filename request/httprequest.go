@@ -2,7 +2,6 @@ package request
 
 import (
 	"bytes"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -74,9 +73,6 @@ func bodyStringFrom(r *http.Request) (string, error) {
 
 func createEscherHeadersFromHTTPHeaders(r *http.Request) Headers {
 	headers := Headers{}
-
-	fmt.Println(r.Header)
-	fmt.Println(r.Host)
 
 	for key, values := range r.Header {
 		for _, value := range values {
