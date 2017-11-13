@@ -10,6 +10,7 @@ type Signer interface {
 	SignRequest(r request.Interface, headersToSign []string) (*request.Request, error)
 	SignedURLBy(httpMethod, urlToSign string, expires int) (string, error)
 	GenerateSignature(r request.Interface, headersToSign []string) string
+	CanonicalizeRequest(r request.Interface, headersToSign []string) string
 }
 
 type signer struct {
