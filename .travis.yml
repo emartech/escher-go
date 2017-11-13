@@ -10,7 +10,7 @@ matrix:
     - go: tip
 
 install:
-    - source env.sh
+    - source .envrc
     - go get -u github.com/golang/dep/cmd/dep && dep ensure
 
 script:
