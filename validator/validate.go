@@ -157,7 +157,7 @@ func (v *validator) Validate(r request.Interface, keyDB keydb.KeyDB, mandatoryHe
 		return "", HTTPSchemaFoundInTheURL
 	}
 
-	s := signer.New(v.config.Reconfig(date.Format(utils.EscherDateFormat), algorithm, credentialScope, apiKeyID, apiSecret))
+	s := signer.New(v.config.Reconfig(rawDate, algorithm, credentialScope, apiKeyID, apiSecret))
 
 	expectedSignature := s.GenerateSignature(requestForSigning, signedHeaders)
 
