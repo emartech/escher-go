@@ -10,8 +10,9 @@ matrix:
     - go: tip
 
 install:
+    - cd $GOPATH/src/github.com/EscherAuth/escher
     - source .envrc
-    - cd $GOPATH/src/github.com/EscherAuth/escher && go get -u github.com/golang/dep/cmd/dep && dep ensure
+    - go get -u github.com/golang/dep/cmd/dep && dep ensure
 
 script:
     - go test -v $(go list ./... | grep -v /vendor/)
