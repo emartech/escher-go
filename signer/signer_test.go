@@ -3,6 +3,8 @@ package signer_test
 import (
 	"testing"
 
+	"github.com/EscherAuth/escher/request"
+
 	"github.com/EscherAuth/escher/config"
 	"github.com/EscherAuth/escher/signer"
 	. "github.com/EscherAuth/escher/testing/cases"
@@ -35,6 +37,51 @@ func TestSignRequest_ErrorOnSigning_ErrorReturnedThatTellsTheProblem(t *testing.
 	})
 }
 
+func TestSignRequest_HasConfiguredDate_DateHeaderIsInUTCFormat(t *testing.T) {
+	t.Log("SignRequest with configured date should add date header in UTC format")
+	c := config.Config{
+		Date:        "20171114T212223+01",
+		AccessKeyId: "dummy key",
+		ApiSecret:   "dummy secret",
+	}
+	config.SetDefaults(&c)
+
+	req := request.New(
+		"GET",
+		"/",
+		[][2]string{{"Host", "example.com"}},
+		"",
+		300)
+
+	signedRequest, _ := signer.New(c).SignRequest(req, []string{})
+	actualDateHeader, _ := signedRequest.Headers().Get("X-Escher-Date")
+
+	assert.Equal(t, "20171114T202223Z", actualDateHeader)
+}
+
+func TestSignRequest_WithoutConfiguredDate_DateHeaderIsInUTCFormat(t *testing.T) {
+	t.Log("SignRequest without configured date should add date header in UTC format")
+	c := config.Config{
+		AccessKeyId: "dummy key",
+		ApiSecret:   "dummy secret",
+	}
+	config.SetDefaults(&c)
+
+	assertSignedRequestDateHeaderIsUTC(t, c)
+}
+
+func TestSignRequest_WithInvalidConfiguredDate_DateHeaderIsInUTCFormat(t *testing.T) {
+	t.Log("SignRequest with malformed configured date should add date header in UTC format")
+	c := config.Config{
+		Date:        "invalid date",
+		AccessKeyId: "dummy key",
+		ApiSecret:   "dummy secret",
+	}
+	config.SetDefaults(&c)
+
+	assertSignedRequestDateHeaderIsUTC(t, c)
+}
+
 func TestSignedURLBy(t *testing.T) {
 	t.Log("SignRequest should return with a properly signed request")
 	EachTestConfigFor(t, []string{"presignurl"}, []string{}, func(c config.Config, testConfig TestConfig) bool {
@@ -48,4 +95,19 @@ func TestSignedURLBy(t *testing.T) {
 
 		return assert.Equal(t, testConfig.Expected.URL, signedURLStr)
 	})
+}
+
+func assertSignedRequestDateHeaderIsUTC(t *testing.T, c config.Config) {
+	req := request.New(
+		"GET",
+		"/",
+		[][2]string{{"Host", "example.com"}},
+		"",
+		300)
+
+	signedRequest, _ := signer.New(c).SignRequest(req, []string{})
+	actualDateHeader, _ := signedRequest.Headers().Get("X-Escher-Date")
+
+	assert.Regexp(t, "^\\d{8}T\\d{6}Z$", actualDateHeader)
+
 }

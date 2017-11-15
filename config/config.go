@@ -65,7 +65,7 @@ func (c Config) DateInHTTPHeaderFormat() string {
 func (c Config) GetDateWithFormat(format string) string {
 
 	if c.Date == "" {
-		return time.Now().Format(format)
+		return time.Now().UTC().Format(format)
 	}
 
 	t, err := utils.ParseTime(c.Date)
@@ -73,10 +73,10 @@ func (c Config) GetDateWithFormat(format string) string {
 	if err != nil {
 		log.Println("WARNING: malformed date string given, fallback to current time")
 
-		return time.Now().Format(format)
+		return time.Now().UTC().Format(format)
 	}
 
-	return t.Format(format)
+	return t.UTC().Format(format)
 
 }
 
