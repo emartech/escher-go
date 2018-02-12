@@ -3,6 +3,7 @@ package signer
 import (
 	"strings"
 
+	"github.com/EscherAuth/escher/debug"
 	"github.com/EscherAuth/escher/request"
 )
 
@@ -16,5 +17,6 @@ func (s *signer) CanonicalizeRequest(r request.Interface, headersToSign []string
 	parts = append(parts, s.canonicalizeHeadersToSign(r, headersToSign))
 	parts = append(parts, s.computeDigest(r.Body()))
 	canonicalizedRequest := strings.Join(parts, "\n")
+	debug.Println(canonicalizedRequest)
 	return canonicalizedRequest
 }
