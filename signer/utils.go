@@ -32,7 +32,7 @@ func normalizeHeaderValue(value string) string {
 func canonicalizeQuery(query requestQuery) string {
 	var q []string
 	for _, kv := range query {
-		q = append(q, strings.Replace(url.QueryEscape(kv[0]), "+", "%20", -1)+"="+url.QueryEscape(kv[1]))
+		q = append(q, strings.Replace(url.QueryEscape(kv[0])+"="+url.QueryEscape(kv[1]), "+", "%20", -1))
 	}
 	sort.Strings(q)
 	return strings.Join(q, "&")
