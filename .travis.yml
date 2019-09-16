@@ -1,18 +1,32 @@
+---
+sudo: false
+
 language: go
-
-go:
-    - 1.8
-    - 1.9
-    - tip
-
-matrix:
-  allow_failures:
-    - go: tip
 
 install:
     - cd $GOPATH/src/github.com/EscherAuth/escher
-    - source .envrc
-    - go get -u github.com/golang/dep/cmd/dep && dep ensure
+    - . .envrc
 
 script:
-    - go test -v $(go list ./... | grep -v /vendor/)
+    - go test ./...
+    - go test -count=100 -race ./...
+
+os:
+    - linux
+    - osx
+
+go:
+    - "1.x"
+    - master
+
+matrix:
+    allow_failures:
+        - go: master
+
+branches:
+    only:
+        - master
+
+notifications:
+    email:
+        - adamluzsi@gmail.com
