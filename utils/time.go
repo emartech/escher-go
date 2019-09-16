@@ -6,7 +6,7 @@ import (
 )
 
 const EscherDateFormat = "20060102T150405Z07"
-const HTTPHeaderFormat = "Fri, 02 Jan 2006 15:04:05 MST"
+const HTTPHeaderFormat = "Mon, 02 Jan 2006 15:04:05 MST"
 
 var acceptedTimeFormats = []string{
 	EscherDateFormat,
