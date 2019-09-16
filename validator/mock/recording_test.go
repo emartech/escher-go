@@ -1,12 +1,14 @@
 package mock_test
 
 import (
+	"fmt"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 
 	"github.com/EscherAuth/escher/keydb"
 	"github.com/EscherAuth/escher/validator"
 	"github.com/EscherAuth/escher/validator/mock"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestErrorRecording(t *testing.T) {
@@ -30,30 +32,33 @@ func TestErrorRecording(t *testing.T) {
 		validator.SigningParamNotFound,
 		validator.SchemaInURLNotAllowed,
 		validator.HTTPSchemaFoundInTheURL,
-		nil,
 	}
 
-	apiKey := "TEST"
 	for _, expectedError := range testCases {
-		t.Logf("when expected Error is %v", expectedError)
-		mock.AddValidationResult(apiKey, expectedError)
-		testWithValidator(t, mock, apiKey, expectedError)
+		t.Run(fmt.Sprintf(`when the expected error is %q`, expectedError.Error()), func(t *testing.T) {
+			mock.AddValidationResult(`TEST`, expectedError)
+			testWithValidator(t, mock, expectedError)
+		})
 	}
+
+	t.Run(`when no error expected from the mock`, func(t *testing.T) {
+		mock.AddValidationResult(`TEST`, nil)
+
+		_, err := mock.Validate(
+			requestBy(t, "GET", "/test", "Hello, World!"),
+			keydb.NewByKeyValuePair("Foo", "Baz"),
+			[]string{"X-Company-Stuff"})
+
+		assert.Nil(t, err)
+	})
 
 }
 
-func testWithValidator(t testing.TB, v validator.Validator, expectedApiKey string, expectedError error) {
-
+func testWithValidator(t testing.TB, v validator.Validator, expectedError error) {
 	req := requestBy(t, "GET", "/test", "Hello, World!")
 	exampleKeyDB := keydb.NewByKeyValuePair("Foo", "Baz")
 	mandatoryHeaders := []string{"X-Company-Stuff"}
 
 	_, err := v.Validate(req, exampleKeyDB, mandatoryHeaders)
-
-	if expectedError == nil {
-		assert.Nil(t, err)
-	} else {
-		assert.Equal(t, expectedError, err)
-	}
-
+	assert.Equal(t, expectedError, err)
 }

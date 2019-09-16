@@ -12,7 +12,7 @@ import (
 
 func TestCanonicalizeRequest(t *testing.T) {
 	t.Log("CanonicalizeRequest should return with a proper string")
-	EachTestConfigFor(t, []string{"signRequest"}, []string{"error"}, func(c config.Config, testConfig TestConfig) bool {
+	EachTestConfigFor(t, []string{"signRequest"}, []string{"error"}, func(t *testing.T, c config.Config, testConfig TestConfig) bool {
 		canonicalizedRequest := signer.New(c).CanonicalizeRequest(&testConfig.Request, testConfig.HeadersToSign)
 
 		return assert.Equal(t, testConfig.Expected.CanonicalizedRequest, canonicalizedRequest, "canonicalizedRequest should be eq")

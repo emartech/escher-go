@@ -29,7 +29,7 @@ func isHappyPath(t testing.TB, validatorErr error, c config.Config, testConfig T
 
 func TestValidateRequest(t *testing.T) {
 	t.Log("Authenticate the incoming request")
-	EachTestConfigFor(t, []string{"authenticate"}, []string{}, func(c config.Config, testConfig TestConfig) bool {
+	EachTestConfigFor(t, []string{"authenticate"}, []string{}, func(t *testing.T, c config.Config, testConfig TestConfig) bool {
 
 		apiKeyID, err := validator.New(c).Validate(&testConfig.Request, testConfig.KeyDB(), nil)
 
@@ -54,7 +54,7 @@ func TestValidateRequest(t *testing.T) {
 
 func TestValidateErrorCases(t *testing.T) {
 	t.Log("Authenticate the incoming request")
-	EachTestConfigFor(t, []string{"authenticate", "error"}, []string{}, func(c config.Config, testConfig TestConfig) bool {
+	EachTestConfigFor(t, []string{"authenticate", "error"}, []string{}, func(t *testing.T, c config.Config, testConfig TestConfig) bool {
 
 		_, err := validator.New(c).Validate(&testConfig.Request, testConfig.KeyDB(), testConfig.MandatorySignedHeaders)
 

@@ -9,7 +9,6 @@ import (
 func (s *signer) GenerateSignature(r request.Interface, headersToSign []string) string {
 	var stringToSign = s.getStringToSign(r, headersToSign)
 	var signingKey = s.calculateSigningKey()
-	debug.Println("GenerateSignature")
-	debug.Println(stringToSign, signingKey)
+	debug.Println("GenerateSignature", stringToSign, signingKey)
 	return s.calculateSignature(stringToSign, signingKey)
 }

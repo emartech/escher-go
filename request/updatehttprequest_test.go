@@ -13,7 +13,7 @@ import (
 func TestUpdateHTTPRequest(t *testing.T) {
 	t.Parallel()
 
-	cases.EachTestConfigFor(t, []string{"signrequest", "post", "payload", "utf8"}, nil, func(c config.Config, tc cases.TestConfig) bool {
+	cases.EachTestConfigFor(t, []string{"signrequest", "post", "payload", "utf8"}, nil, func(t *testing.T, c config.Config, tc cases.TestConfig) bool {
 
 		HTTPRequestToUpdate, err := tc.Request.HTTPRequest("http://example.org:8080")
 

@@ -17,7 +17,6 @@ func (s *signer) CanonicalizeRequest(r request.Interface, headersToSign []string
 	parts = append(parts, s.canonicalizeHeadersToSign(r, headersToSign))
 	parts = append(parts, s.computeDigest(r.Body()))
 	canonicalizedRequest := strings.Join(parts, "\n")
-	debug.Println("CanonicalizeRequest")
-	debug.Println(canonicalizedRequest)
+	debug.Println("CanonicalizeRequest", canonicalizedRequest)
 	return canonicalizedRequest
 }

@@ -13,7 +13,7 @@ import (
 
 func TestSignRequest_RequestIsValid_SignedRequestReturned(t *testing.T) {
 	t.Log("SignRequest should return with a properly signed request")
-	EachTestConfigFor(t, []string{"signRequest"}, []string{"error"}, func(c config.Config, testConfig TestConfig) bool {
+	EachTestConfigFor(t, []string{"signRequest"}, []string{"error"}, func(t *testing.T, c config.Config, testConfig TestConfig) bool {
 		signedRequest, err := signer.New(c).SignRequest(&testConfig.Request, testConfig.HeadersToSign)
 
 		if !assert.NoError(t, err) {
@@ -30,7 +30,7 @@ func TestSignRequest_RequestIsValid_SignedRequestReturned(t *testing.T) {
 
 func TestSignRequest_ErrorOnSigning_ErrorReturnedThatTellsTheProblem(t *testing.T) {
 	t.Log("SignRequest should return error about what was wrong with the given request to sign")
-	EachTestConfigFor(t, []string{"signRequest", "error"}, []string{}, func(c config.Config, testConfig TestConfig) bool {
+	EachTestConfigFor(t, []string{"signRequest", "error"}, []string{}, func(t *testing.T, c config.Config, testConfig TestConfig) bool {
 		_, err := signer.New(c).SignRequest(&testConfig.Request, testConfig.HeadersToSign)
 
 		return assert.EqualError(t, err, testConfig.Expected.Error)
@@ -84,7 +84,7 @@ func TestSignRequest_WithInvalidConfiguredDate_DateHeaderIsInUTCFormat(t *testin
 
 func TestSignedURLBy(t *testing.T) {
 	t.Log("SignRequest should return with a properly signed request")
-	EachTestConfigFor(t, []string{"presignurl"}, []string{}, func(c config.Config, testConfig TestConfig) bool {
+	EachTestConfigFor(t, []string{"presignurl"}, []string{}, func(t *testing.T, c config.Config, testConfig TestConfig) bool {
 		r := &testConfig.Request
 
 		signedURLStr, err := signer.New(c).SignedURLBy(r.Method(), r.RawURL(), r.Expires())

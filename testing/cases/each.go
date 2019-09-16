@@ -1,47 +1,37 @@
 package cases
 
 import (
+	"path"
+	"path/filepath"
 	"testing"
 
 	"github.com/EscherAuth/escher/config"
+	"github.com/EscherAuth/escher/debug"
 )
 
-func EachTestConfigFor(t testing.TB, includes, ignores []string, tester func(config.Config, TestConfig) bool) {
+func EachTestConfigFor(t *testing.T, includes, ignores []string, tester func(*testing.T, config.Config, TestConfig) bool) {
 	testedCases := make(map[bool]struct{})
 
 	for _, testConfig := range getTestConfigsForTopic(t, includes, ignores) {
 
-		if testing.Verbose() {
-			t.Log("-----------------------------------------------")
+		testCaseName := path.Join(
+			// this works nicely because the test-cases project
+			// has directory level for each test case group
+			filepath.Base(filepath.Dir(testConfig.FilePath)),
+			filepath.Base(testConfig.FilePath),
+		)
 
+		t.Run(testCaseName, func(t *testing.T) {
 			t.Log(testConfig.getTitle())
-			if testConfig.Description != "" {
-				t.Log(testConfig.Description)
-			}
-
+			t.Log(testConfig.Description)
 			t.Log(testConfig.FilePath)
-		}
+			defer debug.SetPrinter(t.Log)()
 
-		testedCases[tester(fixedConfigBy(t, testConfig.Config), testConfig)] = struct{}{}
-
-		if testing.Verbose() {
-
-			if !t.Failed() {
-				t.Log("OK")
-			} else {
-				t.Log("ERROR")
-			}
-
-			t.Log("-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --\n")
-		}
-
-		if isFastFailEnabled() && t.Failed() {
-			t.FailNow()
-		}
-
+			testedCases[tester(t, fixedConfigBy(testConfig.Config), testConfig)] = struct{}{}
+		})
 	}
 
 	if _, ok := testedCases[true]; !ok {
-		t.Fatal("No test case was used")
+		t.Fatal("No test case matched the current include/ignore setup")
 	}
 }

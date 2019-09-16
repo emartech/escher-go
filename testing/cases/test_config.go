@@ -38,16 +38,15 @@ func (testConfig TestConfig) getTitle() string {
 	return title
 }
 
-func fixedConfigBy(tb testing.TB, c config.Config) config.Config {
+func fixedConfigBy(c config.Config) config.Config {
 	var t, err = time.Parse("2006-01-02T15:04:05.999999Z", c.Date)
 	if err != nil {
-		t, err = time.Parse("Fri, 02 Jan 2006 15:04:05 GMT", c.Date)
+		t, err = time.Parse("Mon, 02 Jan 2006 15:04:05 MST", c.Date)
 	}
 	if err != nil {
 		t = time.Now().UTC()
 	}
 	c.Date = t.Format("20060102T150405Z")
-
 	return c
 }
 
