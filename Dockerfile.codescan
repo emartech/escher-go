@@ -1,0 +1,10 @@
+FROM golang:1.5.0
+
+COPY install.sh /tmp/
+RUN chmod 755 /tmp/install.sh
+
+ENV GOPATH=/workspace/source/dependencies
+
+WORKDIR /workspace/source
+
+ENTRYPOINT ["/tmp/install.sh"]
