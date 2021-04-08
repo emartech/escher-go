@@ -16,7 +16,7 @@ import (
 
 type parsedPathQuery struct {
   Path string
-  Query EshcerRequestQuery
+  Query EscherRequestQuery
 }
 
 type EscherConfig struct {
@@ -39,7 +39,7 @@ type EscherRequest struct {
 }
 
 type EscherRequestHeaders [][2]string
-type EshcerRequestQuery [][2]string
+type EscherRequestQuery [][2]string
 
 func Escher(config EscherConfig) EscherConfig {
   var t, err = time.Parse("2006-01-02T15:04:05.999999Z", config.Date)
@@ -117,7 +117,7 @@ func (config EscherConfig) canonicalizeHeadersToSign(headers []string) string {
 }
 
 
-func canonicalizeQuery(query EshcerRequestQuery) string {
+func canonicalizeQuery(query EscherRequestQuery) string {
   var q []string
   for _, kv := range query {
     q = append(q, strings.Replace(url.QueryEscape(kv[0]), "+", "%20", -1) + "=" + url.QueryEscape(kv[1]))
@@ -248,8 +248,8 @@ func (config EscherConfig) shortDate() string {
   return config.Date[:8]
 }
 
-func parseQuery(query string) EshcerRequestQuery {
-  var q EshcerRequestQuery
+func parseQuery(query string) EscherRequestQuery {
+  var q EscherRequestQuery
   for _, param := range strings.Split(query, "&") {
     var kv = strings.SplitN(param, "=", 2)
     var kv2 [2]string
