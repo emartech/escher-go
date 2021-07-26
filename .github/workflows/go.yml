@@ -31,6 +31,7 @@ jobs:
         run: |
           go list -f '{{range .TestImports}}{{.}} {{end}}' ./... | xargs go get -v
           go get golang.org/x/tools/cmd/cover
+          go mod init
           go test -v -cover escher_test.go
         env:
           GOPATH: /home/runner/work/test/test
