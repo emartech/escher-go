@@ -35,4 +35,4 @@ jobs:
           
           go test -v -cover escher_test.go
         env:
-          GOPATH: /home/runner/work/test/test
+          GOPATH: /home/runner/work/go
