@@ -21,7 +21,6 @@ jobs:
     name: Go ${{ matrix.go }} sample
     steps:
       - uses: actions/checkout@v2
-        path: src/emartech/escher-go
 
       - name: Setup go
         uses: actions/setup-go@v2
@@ -33,4 +32,4 @@ jobs:
           
           go test -v -cover ./... 
         env:
-          GOPATH: /home/runner/work/src/emartech/escher-go
+          GOPATH: /home/runner/work
