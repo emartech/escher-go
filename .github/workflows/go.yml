@@ -30,7 +30,7 @@ jobs:
       
       - name: Install
         run: |
-          go mod init emartech/escher-go
+          
           go list -f '{{range .Imports}}{{.}} {{end}}' ./... | xargs go get -v
           go list -f '{{range .TestImports}}{{.}} {{end}}' ./... | xargs go get -v
           go get golang.org/x/tools/cmd/cover
@@ -38,4 +38,6 @@ jobs:
         env:
           GOPATH: /home/runner/work/go
       - name: Test
-        run: go test -v -cover ./...
+        run: |
+          go mod init emartech/escher-go
+          go test -v -cover ./...
