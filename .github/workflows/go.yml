@@ -29,7 +29,7 @@ jobs:
       
       - name: Install & Test
         run: |
-          
+          go list -f '{{range .TestImports}}{{.}} {{end}}' ./... | xargs go get -v
           go test -v -cover escher_test.go
         env:
           GOPATH: /home/runner/work
