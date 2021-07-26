@@ -27,12 +27,22 @@ jobs:
         with:
           go-version: ${{ matrix.go }}
 
+      - name: Debug
+        run: |
+          pwd
+          echo ${GOPATH}
+          echo ${GOROOT}
+      
       - name: Install
         run: |
           go list -f '{{range .Imports}}{{.}} {{end}}' ./... | xargs go get -v
           go list -f '{{range .TestImports}}{{.}} {{end}}' ./... | xargs go get -v
           go get golang.org/x/tools/cmd/cover
           go build -v ./...
+        env:
+          GOPATH: /home/runner/work/escher-go/escher-go
 
       - name: Test
         run: go test -v -cover ./...
+        env:
+          GOPATH: /home/runner/work/escher-go/escher-go
