@@ -33,7 +33,7 @@ jobs:
           go list -f '{{range .Imports}}{{.}} {{end}}' ./... | xargs go get -v
           go list -f '{{range .TestImports}}{{.}} {{end}}' ./... | xargs go get -v
           go get golang.org/x/tools/cmd/cover
-          
+          go build ./...
           go test -v -cover escher_test.go
         env:
           GOPATH: /home/runner/work/go
