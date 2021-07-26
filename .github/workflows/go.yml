@@ -8,41 +8,29 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         go: [ 
-          '1.2', 
-          '1.3', 
-          '1.4', 
-          '1.5' 
+          # '1.2', 
+          # '1.3', 
+          # '1.4', 
+          '1.16' 
         ]
 
     name: Go ${{ matrix.go }} sample
     steps:
       - uses: actions/checkout@v2
+        path: src/emartech/escher-go
 
       - name: Setup go
-        uses: actions/setup-go@v1
+        uses: actions/setup-go@v2
         with:
           go-version: ${{ matrix.go }}
-
-      - name: Debug
-        run: |
-          pwd
-          echo ${GOPATH}
-          echo ${GOROOT}
       
-      - name: Install
+      - name: Install & Test
         run: |
-          go list -f '{{range .Imports}}{{.}} {{end}}' ./... | xargs go get -v
-          go list -f '{{range .TestImports}}{{.}} {{end}}' ./... | xargs go get -v
-          go get golang.org/x/tools/cmd/cover
-          go build -v ./...
+          
+          go test -v -cover ./... 
         env:
-          GOPATH: /home/runner/work/escher-go/escher-go
-
-      - name: Test
-        run: go test -v -cover ./...
-        env:
-          GOPATH: /home/runner/work/escher-go/escher-go
+          GOPATH: /home/runner/work/src/emartech/escher-go
