@@ -1,0 +1,40 @@
+name: go
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-18.04
+    strategy:
+      matrix:
+        go: [ 
+          '1.2', 
+          '1.3', 
+          '1.4', 
+          '1.5' 
+        ]
+
+    name: Go ${{ matrix.go }} sample
+    steps:
+      - uses: actions/checkout@v2
+        fetch-depth: 1
+        path: go/src/github.com/escher-go
+
+      - name: Setup go
+        uses: actions/setup-go@v1
+        with:
+          go-version: ${{ matrix.go }}
+
+      - name: Install
+        run: |
+          go list -f '{{range .Imports}}{{.}} {{end}}' ./... | xargs go get -v
+          go list -f '{{range .TestImports}}{{.}} {{end}}' ./... | xargs go get -v
+          go get golang.org/x/tools/cmd/cover
+          go build -v ./...
+
+      - name: Test
+        run: go test -v -cover ./...
