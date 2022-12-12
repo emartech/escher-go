@@ -28,12 +28,7 @@ jobs:
           go-version: ${{ matrix.go }}
       
       - name: Install
-        run: |
-          go mod init emartech/escher-go
-          go list -f '{{range .Imports}}{{.}} {{end}}' ./... | xargs go get -v
-          go list -f '{{range .TestImports}}{{.}} {{end}}' ./... | xargs go get -v
-          go get golang.org/x/tools/cmd/cover
-          go build ./...
+        run: go get
       
       - name: Test
         run: go test -v -cover ./...
