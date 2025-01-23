@@ -9,6 +9,7 @@ import (
   "strings"
   "sort"
   "time"
+  "log"
   "net/url"
   "regexp"
   . "github.com/PuerkitoBio/purell"
@@ -195,7 +196,10 @@ func (config EscherConfig) getDefaultHeaders(headers EscherRequestHeaders) Esche
   if !hasHeader(config.DateHeaderName, headers) {
     dateHeader := config.Date
     if strings.ToLower(config.DateHeaderName) == "date" {
-      var t, _ = time.Parse("20060102T150405Z", config.Date)
+      t, err := time.Parse("20060102T150405Z", config.Date)
+      if err != nil {
+        log.Println("Error parsing date header")
+      }
       dateHeader = t.Format("Fri, 02 Jan 2006 15:04:05 GMT")
     }
     newHeaders = append(newHeaders, [2]string { config.DateHeaderName, dateHeader })
