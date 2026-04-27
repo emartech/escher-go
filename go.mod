@@ -1,6 +1,6 @@
 module github.com/emartech/escher-go
 
-go 1.24.0
+go 1.25.0
 
 require (
 	github.com/PuerkitoBio/purell v1.2.1
@@ -8,9 +8,10 @@ require (
 )
 
 require (
-	github.com/gopherjs/gopherjs v1.17.2 // indirect
+	github.com/gopherjs/gopherjs v1.20.0 // indirect
 	github.com/jtolds/gls v4.20.0+incompatible // indirect
-	github.com/smarty/assertions v1.15.0 // indirect
-	golang.org/x/net v0.46.0 // indirect
-	golang.org/x/text v0.30.0 // indirect
+	github.com/smartystreets/assertions v1.13.1 // indirect
+	golang.org/x/crypto v0.50.0 // indirect
+	golang.org/x/net v0.53.0 // indirect
+	golang.org/x/text v0.36.0 // indirect
 )
