@@ -10,6 +10,7 @@ require (
 require (
 	github.com/gopherjs/gopherjs v1.20.0 // indirect
 	github.com/jtolds/gls v4.20.0+incompatible // indirect
+	github.com/smarty/assertions v1.15.0 // indirect
 	github.com/smartystreets/assertions v1.13.1 // indirect
 	golang.org/x/crypto v0.50.0 // indirect
 	golang.org/x/net v0.53.0 // indirect
